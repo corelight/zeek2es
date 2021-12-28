@@ -2,7 +2,7 @@
 
 This Python application translates Zeek's ASCII TSV
 logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html#add-multiple-documents).
-For JSON logs, see Elastic's File Beats application.
+For [JSON logs, see Elastic's File Beats application](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-zeek.html).
 
 This application will recognize gzip or uncompressed logs.
 
