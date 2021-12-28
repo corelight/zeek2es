@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 if args.esindex and args.stdout:
     print()
-    print("Cannot write to Elasticsearch and the stdout at the same time.")
+    print("Cannot write to Elasticsearch and stdout at the same time.")
     print()
     exit(-1)
 
