@@ -16,7 +16,7 @@ UTC for Elasticsearch.
 ## Command Line:
 
 ```
-python zeek2es.py your_zeek_log.gz -e your_es_index_name
+python zeek2es.py your_zeek_log.gz -i your_es_index_name
 ```
 
 This script can be run in parallel on all connection logs, 10 at a time, with the following command:
