@@ -196,7 +196,7 @@ if len(types) > 0 and len(fields) > 0:
         else:
             print(outstring)
 
-# Use a state table in our ES instance
+# Use a state document in our ES instance
 if not args.stdout:
     d = dict()
     now = datetime.datetime.utcnow()
