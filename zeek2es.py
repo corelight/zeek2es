@@ -139,6 +139,7 @@ if len(types) > 0 and len(fields) > 0:
 
     putmapping = False
     n = 0
+    items = 0
     outstring = ""
     for row in read_tsv:
         d = dict(zeek_log_filename=filename)
@@ -168,6 +169,7 @@ if len(types) > 0 and len(fields) > 0:
                 outstring += "{ \"index\": { } }\n"
             outstring += json.dumps(d)+"\n"
             n += 1
+            items += 1
             if not args.stdout:
                 if putmapping is False:
                     requests.delete(args.esurl+es_index)
@@ -198,7 +200,7 @@ if len(types) > 0 and len(fields) > 0:
 if not args.stdout:
     d = dict()
     now = datetime.datetime.utcnow()
-    d = dict(zeek_log_imported_filename=filename, ts="{}T{}Z".format(now.date(), now.time()))
+    d = dict(zeek_log_imported_filename=filename, items=items, ts="{}T{}Z".format(now.date(), now.time()))
 
     res = requests.post(args.esurl+es_index+'/_doc', json=d)
     if not res.ok:
