@@ -128,7 +128,7 @@ if len(types) > 0 and len(fields) > 0:
     n = 0
     outstring = ""
     for row in read_tsv:
-        d = dict()
+        d = dict(zeek_log_filename=filename)
         i = 0
         for col in row:
             if types[i] == "time":
