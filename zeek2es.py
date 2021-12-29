@@ -56,14 +56,26 @@ if (len(args.name) > 0):
 es_index = "zeek_"+sysname+es_index.replace(':', '_').replace("/", "_")
 
 if args.checkindex:
+    if args.stdout:
+        print()
+        print("You cannot check the index and dump the data to stdout.")
+        print()
+        exit(-4)
+
     res = requests.get(args.esurl+es_index)
     if res.ok:
         print()
         print("This index {} already exists.  Exiting.".format(es_index))
         print()
-        exit(-4)
+        exit(-5)
 
 if args.checkstate:
+    if args.stdout:
+        print()
+        print("You cannot check the index state and dump the data to stdout.")
+        print()
+        exit(-6)
+        
     res = requests.get(args.esurl+es_index+'/_search', json=dict(query=dict(match=dict(zeek_log_imported_filename=filename))))
     if res.ok:
         for hit in res.json()['hits']['hits']:
@@ -72,7 +84,7 @@ if args.checkstate:
                 print()
                 print("This index {} is already completed.  Exiting.".format(es_index))
                 print()
-                exit(-5)
+                exit(-7)
                 
 if filename.split(".")[-1].lower() == "gz":
     # This works on Linux and MacOs
