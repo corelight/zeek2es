@@ -5,6 +5,7 @@ import csv
 import io
 import os
 import requests
+import datetime
 import argparse
 
 parser = argparse.ArgumentParser(description='Process Zeek ASCII logs into Elasticsearch.')
@@ -15,6 +16,7 @@ parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The
 parser.add_argument('-l', '--lines', default=50000, type=int, help='Lines to buffer for RESTful operations. (default: 50,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-c', '--checkindex', action="store_true", help='Check for the ES index first, and if it exists exit this program.')
+parser.add_argument('-q', '--checkstate', action="store_true", help='Check the ES index state first, and if it exists exit this program.')
 parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
 args = parser.parse_args()
@@ -61,6 +63,17 @@ if args.checkindex:
         print()
         exit(-4)
 
+if args.checkstate:
+    res = requests.get(args.esurl+es_index+'/_search', json=dict(query=dict(match=dict(zeek_log_imported_filename=filename))))
+    if res.ok:
+        for hit in res.json()['hits']['hits']:
+            data = hit["_source"]
+            if data['zeek_log_imported_filename'] == filename:
+                print()
+                print("This index {} is already completed.  Exiting.".format(es_index))
+                print()
+                exit(-5)
+                
 if filename.split(".")[-1].lower() == "gz":
     # This works on Linux and MacOs
     zcat_name = ["gzip", "-d", "-c"]
@@ -157,18 +170,16 @@ if len(types) > 0 and len(fields) > 0:
             n += 1
             if not args.stdout:
                 if putmapping is False:
-                    with open(os.devnull, 'w') as devnull:
-                        requests.delete(args.esurl+es_index)
-                        requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
-                                        data=json.dumps(mappings).encode('UTF-8'))
+                    requests.delete(args.esurl+es_index)
+                    requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
+                                    data=json.dumps(mappings).encode('UTF-8'))
                     putmapping = True
         if n >= args.lines:
             if not args.stdout:
-                with open(os.devnull, 'w') as devnull:
-                    res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
-                                       data=outstring.encode('UTF-8'))
-                    if not res.ok:
-                        print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
+                res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
+                                    data=outstring.encode('UTF-8'))
+                if not res.ok:
+                    print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
             else:
                 print(outstring)
             outstring = ""
@@ -176,10 +187,19 @@ if len(types) > 0 and len(fields) > 0:
     if n != 0:
         # One last time
         if not args.stdout:
-            with open(os.devnull, 'w') as devnull:
-                res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
-                                   data=outstring.encode('UTF-8'))
-                if not res.ok:
-                    print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
+            res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
+                                data=outstring.encode('UTF-8'))
+            if not res.ok:
+                print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
         else:
             print(outstring)
+
+# Use a state table in our ES instance
+if not args.stdout:
+    d = dict()
+    now = datetime.datetime.utcnow()
+    d = dict(zeek_log_imported_filename=filename, ts="{}T{}Z".format(now.date(), now.time()))
+
+    res = requests.post(args.esurl+es_index+'/_doc', json=d)
+    if not res.ok:
+        print("WARNING! POST did not return OK to save your state info! Your index state {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
