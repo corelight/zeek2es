@@ -34,18 +34,36 @@ if args.nobulk and not args.stdout:
     exit(-2)
 
 filename = args.filename
+                
+if filename.split(".")[-1].lower() == "gz":
+    # This works on Linux and MacOs
+    zcat_name = ["gzip", "-d", "-c"]
+else:
+    zcat_name = ["cat"]
+
+# Get the date
+
+zcat_process = subprocess.Popen(zcat_name+[filename], 
+                                stdout=subprocess.PIPE)
+
+head_process = subprocess.Popen(['head'], 
+                                stdin=zcat_process.stdout,
+                                stdout=subprocess.PIPE)
+
+grep_process = subprocess.Popen(['grep', '#open'], 
+                                stdin=head_process.stdout,
+                                stdout=subprocess.PIPE)
+
+try:
+    log_date = datetime.datetime.strptime(grep_process.communicate()[0].decode('UTF-8').strip().split('\t')[1], "%Y-%m-%d-%H-%M-%S")
+except:
+    print()
+    print("Date not found from Zeek log!")
+    print()
+    exit(-3)
 
 if not args.esindex:
-    dirname = os.path.dirname(filename).split("/")
-    if len(dirname[-1]) == 0:
-        print()
-        print("To use this application with just a file name, the parent directory in the path needs to be a date string.")
-        print("This keeps our index names unique for files that may not be.")
-        print("Use a full file path to the Zeek log or specify the index you want.")
-        print()
-        exit(-3)
-    datestr = dirname[-1]
-    es_index = datestr + "_" + os.path.basename(filename)
+    es_index = "{}_{}".format(log_date.date(), os.path.basename(filename))
 else:
     es_index = args.esindex
 
@@ -85,12 +103,6 @@ if args.checkstate:
                 print("This index {} is already completed.  Exiting.".format(es_index))
                 print()
                 exit(-7)
-                
-if filename.split(".")[-1].lower() == "gz":
-    # This works on Linux and MacOs
-    zcat_name = ["gzip", "-d", "-c"]
-else:
-    zcat_name = ["cat"]
 
 # Get the Zeek fields
 
