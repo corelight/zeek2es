@@ -62,8 +62,23 @@ except:
     print()
     exit(-3)
 
+# Get the path
+
+zcat_process = subprocess.Popen(zcat_name+[filename], 
+                                stdout=subprocess.PIPE)
+
+head_process = subprocess.Popen(['head'], 
+                                stdin=zcat_process.stdout,
+                                stdout=subprocess.PIPE)
+
+grep_process = subprocess.Popen(['grep', '#path'], 
+                                stdin=head_process.stdout,
+                                stdout=subprocess.PIPE)
+
+zeek_log_path = grep_process.communicate()[0].decode('UTF-8').strip().split('\t')[1]
+
 if not args.esindex:
-    es_index = "{}_{}".format(log_date.date(), os.path.basename(filename))
+    es_index = "{}_{}_{}".format(log_date.date(), log_date.time(), zeek_log_path)
 else:
     es_index = args.esindex
 
@@ -166,7 +181,7 @@ if len(types) > 0 and len(fields) > 0:
     items = 0
     outstring = ""
     for row in read_tsv:
-        d = dict(zeek_log_filename=filename)
+        d = dict(zeek_log_filename=filename, zeek_log_path=zeek_log_path)
         i = 0
         for col in row:
             if types[i] == "time":
@@ -222,9 +237,8 @@ if len(types) > 0 and len(fields) > 0:
 
 # Use a state document in our ES instance
 if not args.stdout:
-    d = dict()
     now = datetime.datetime.utcnow()
-    d = dict(zeek_log_imported_filename=filename, items=items, ts="{}T{}Z".format(now.date(), now.time()))
+    d = dict(zeek_log_imported_filename=filename, items=items, zeek_log_path=zeek_log_path, ts="{}T{}Z".format(now.date(), now.time()))
 
     res = requests.post(args.esurl+es_index+'/_doc', json=d)
     if not res.ok:
