@@ -193,7 +193,7 @@ if len(types) > 0 and len(fields) > 0:
                 res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
                                     data=outstring.encode('UTF-8'))
                 if not res.ok:
-                    print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
+                    print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
             else:
                 print(outstring)
             outstring = ""
@@ -204,7 +204,7 @@ if len(types) > 0 and len(fields) > 0:
             res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
                                 data=outstring.encode('UTF-8'))
             if not res.ok:
-                print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
+                print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
         else:
             print(outstring)
 
@@ -216,4 +216,4 @@ if not args.stdout:
 
     res = requests.post(args.esurl+es_index+'/_doc', json=d)
     if not res.ok:
-        print("WARNING! POST did not return OK to save your state info! Your index state {} is incomplete.  Filename: {} Response: {}".format(es_index, filename, res))
+        print("WARNING! POST did not return OK to save your state info! Your index state {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
