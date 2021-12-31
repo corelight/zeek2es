@@ -1,3 +1,4 @@
+v0.1.8 - Added system name to log, if available.
 v0.1.7 - Improved index name generation.
 v0.1.6 - Get date from log rather than path.
 v0.1.5 - Added more debug output.

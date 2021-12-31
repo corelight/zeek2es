@@ -182,28 +182,38 @@ if len(types) > 0 and len(fields) > 0:
     outstring = ""
     for row in read_tsv:
         d = dict(zeek_log_filename=filename, zeek_log_path=zeek_log_path)
+        if (len(args.name) > 0):
+            d["zeek_log_system_name"] = args.name
         i = 0
+        added_val = False
         for col in row:
             if types[i] == "time":
                 if col != '-' and col != '(empty)':
                     d[fields[i]] = col
+                    added_val = True
             elif types[i] == "interval" or types[i] == "double":
                 if col != '-' and col != '(empty)':
                     d[fields[i]] = float(col)
+                    added_val = True
             elif types[i] == "bool":
                 if col != '-' and col != '(empty)':
                     d[fields[i]] = col == "T"
+                    added_val = True
             elif types[i] == "port" or types[i] == "count" or types[i] == "int":
                 if col != '-' and col != '(empty)':
                     d[fields[i]] = int(col)
+                    added_val = True
             elif types[i].startswith("vector") or types[i].startswith("set"):
                 if col != '-' and col != '(empty)':
                     d[fields[i]] = col.split(",")
+                    added_val = True
             else:
                 if col != '-' and col != '(empty)':
                     d[fields[i]] = col
+                    added_val = True
             i += 1
-        if len(d.keys()) > 0:
+
+        if added_val:
             if not args.nobulk:
                 outstring += "{ \"index\": { } }\n"
             outstring += json.dumps(d)+"\n"
@@ -215,6 +225,7 @@ if len(types) > 0 and len(fields) > 0:
                     requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
                                     data=json.dumps(mappings).encode('UTF-8'))
                     putmapping = True
+
         if n >= args.lines:
             if not args.stdout:
                 res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
@@ -225,6 +236,7 @@ if len(types) > 0 and len(fields) > 0:
                 print(outstring)
             outstring = ""
             n = 0
+
     if n != 0:
         # One last time
         if not args.stdout:
@@ -239,7 +251,8 @@ if len(types) > 0 and len(fields) > 0:
 if not args.stdout:
     now = datetime.datetime.utcnow()
     d = dict(zeek_log_imported_filename=filename, items=items, zeek_log_path=zeek_log_path, ts="{}T{}Z".format(now.date(), now.time()))
-
+    if (len(args.name) > 0):
+        d["zeek_log_system_name"] = args.name
     res = requests.post(args.esurl+es_index+'/_doc', json=d)
     if not res.ok:
         print("WARNING! POST did not return OK to save your state info! Your index state {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
