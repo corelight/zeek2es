@@ -29,7 +29,7 @@ find /some/dir -name “conn*.log.gz” | parallel -j 10 python zeek2es.py {1} :
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-c] [-q] [-s] [-b] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-c] [-q] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -49,6 +49,8 @@ optional arguments:
   -q, --checkstate      Check the ES index state first, and if it exists exit this program.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
   -b, --nobulk          Remove the ES bulk JSON header. Requires --stdout.
+  -z, --supresswarnings
+                        Supress any type of warning. Die silently.
 ```
 
 ## Requirements:
