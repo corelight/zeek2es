@@ -19,6 +19,7 @@ parser.add_argument('-c', '--checkindex', action="store_true", help='Check for t
 parser.add_argument('-q', '--checkstate', action="store_true", help='Check the ES index state first, and if it exists exit this program.')
 parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
+parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die silently.')
 args = parser.parse_args()
 
 if args.esindex and args.stdout:
@@ -57,9 +58,10 @@ grep_process = subprocess.Popen(['grep', '#open'],
 try:
     log_date = datetime.datetime.strptime(grep_process.communicate()[0].decode('UTF-8').strip().split('\t')[1], "%Y-%m-%d-%H-%M-%S")
 except:
-    print()
-    print("Date not found from Zeek log!")
-    print()
+    if not args.supresswarnings:
+        print()
+        print("Date not found from Zeek log!")
+        print()
     exit(-3)
 
 # Get the path
@@ -90,23 +92,26 @@ es_index = "zeek_"+sysname+es_index.replace(':', '_').replace("/", "_")
 
 if args.checkindex:
     if args.stdout:
-        print()
-        print("You cannot check the index and dump the data to stdout.")
-        print()
+        if not args.supresswarnings:
+            print()
+            print("You cannot check the index and dump the data to stdout.")
+            print()
         exit(-4)
 
     res = requests.get(args.esurl+es_index)
     if res.ok:
-        print()
-        print("This index {} already exists.  Exiting.".format(es_index))
-        print()
+        if not args.supresswarnings:
+            print()
+            print("This index {} already exists.  Exiting.".format(es_index))
+            print()
         exit(-5)
 
 if args.checkstate:
     if args.stdout:
-        print()
-        print("You cannot check the index state and dump the data to stdout.")
-        print()
+        if not args.supresswarnings:
+            print()
+            print("You cannot check the index state and dump the data to stdout.")
+            print()
         exit(-6)
         
     res = requests.get(args.esurl+es_index+'/_search', json=dict(query=dict(match=dict(zeek_log_imported_filename=filename))))
@@ -114,9 +119,10 @@ if args.checkstate:
         for hit in res.json()['hits']['hits']:
             data = hit["_source"]
             if data['zeek_log_imported_filename'] == filename:
-                print()
-                print("This index {} is already completed.  Exiting.".format(es_index))
-                print()
+                if not args.supresswarnings:
+                    print()
+                    print("This index {} is already completed.  Exiting.".format(es_index))
+                    print()
                 exit(-7)
 
 # Get the Zeek fields
@@ -154,9 +160,11 @@ types = grep_process.communicate()[0].decode('UTF-8').strip().split('\t')[1:]
 zcat_process = subprocess.Popen(zcat_name+[filename], 
                                 stdout=subprocess.PIPE)
 
+devnull = open(os.devnull, 'w')
 zeek_cut_process = subprocess.Popen(['zeek-cut', '-d', '-u'], 
                                     stdin=zcat_process.stdout,
-                                    stdout=subprocess.PIPE)
+                                    stdout=subprocess.PIPE,
+                                    stderr=devnull)
 
 csv.field_size_limit(sys.maxsize)
 if len(types) > 0 and len(fields) > 0:
@@ -231,7 +239,8 @@ if len(types) > 0 and len(fields) > 0:
                 res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
                                     data=outstring.encode('UTF-8'))
                 if not res.ok:
-                    print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
+                    if not args.supresswarnings:
+                        print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
             else:
                 print(outstring)
             outstring = ""
@@ -243,7 +252,8 @@ if len(types) > 0 and len(fields) > 0:
             res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
                                 data=outstring.encode('UTF-8'))
             if not res.ok:
-                print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
+                if not args.supresswarnings:
+                    print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
         else:
             print(outstring)
 
@@ -255,4 +265,5 @@ if not args.stdout:
         d["zeek_log_system_name"] = args.name
     res = requests.post(args.esurl+es_index+'/_doc', json=d)
     if not res.ok:
-        print("WARNING! POST did not return OK to save your state info! Your index state {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
+        if not args.supresswarnings:
+            print("WARNING! POST did not return OK to save your state info! Your index state {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
