@@ -4,14 +4,15 @@ This Python application translates Zeek's ASCII TSV
 logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html#add-multiple-documents).
 For [JSON logs, see Elastic's File Beats application](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-zeek.html).
 
-This application will recognize gzip or uncompressed logs.
+This application will recognize gzip or uncompressed logs.  If you do not have
+ElasticSearch you can output the JSON to stdout with the `-s -b` command line options
+to process with the [jq application](https://stedolan.github.io/jq).
 
 This application assumes you have Elasticsearch set up on your
 localhost at the default port.
 
-Run this program on a system with the same timezone that was logged
-by Zeek originally, as `zeek-cut -d -u` translates the timestamps into 
-UTC for Elasticsearch.
+This program assumes you are running it on a system with the same timezone that was used
+by Zeek originally.
 
 ## Command Line:
 
@@ -29,7 +30,7 @@ find /some/dir -name “conn*.log.gz” | parallel -j 10 python zeek2es.py {1} :
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-c] [-q] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-c] [-q] [-t] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -47,6 +48,7 @@ optional arguments:
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
   -c, --checkindex      Check for the ES index first, and if it exists exit this program.
   -q, --checkstate      Check the ES index state first, and if it exists exit this program.
+  -t, --humantime       Keep the time in human format.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
   -b, --nobulk          Remove the ES bulk JSON header. Requires --stdout.
   -z, --supresswarnings
