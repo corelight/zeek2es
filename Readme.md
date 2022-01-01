@@ -9,8 +9,13 @@ you have ElasticSearch set up on your localhost at the default port.
 If you do not have ElasticSearch you can output the JSON to stdout with the `-s -b` command line options
 to process with the [jq application](https://stedolan.github.io/jq).
 
-This program assumes you are running it on a system with the same timezone that was used
-by Zeek originally.
+This program will output date and times in GMT time zone.  You can change the input with the `-m`
+command line option with any timezone listed by the following Python program:
+
+```
+import pytz
+print(pytz.all_timezones)
+```
 
 ## Command Line:
 

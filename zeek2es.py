@@ -5,6 +5,7 @@ import csv
 import io
 import requests
 import datetime
+import pytz
 import argparse
 
 parser = argparse.ArgumentParser(description='Process Zeek ASCII logs into Elasticsearch.')
@@ -14,6 +15,7 @@ parser.add_argument('-i', '--esindex', help='The Elasticsearch index name.')
 parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The Elasticsearch URL. (default: http://localhost:9200/)')
 parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 50,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
+parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
 parser.add_argument('-c', '--checkindex', action="store_true", help='Check for the ES index first, and if it exists exit this program.')
 parser.add_argument('-q', '--checkstate', action="store_true", help='Check the ES index state first, and if it exists exit this program.')
 parser.add_argument('-t', '--humantime', action="store_true", help='Keep the time in human string format.')
@@ -22,6 +24,9 @@ parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to s
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
 parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die silently.')
 args = parser.parse_args()
+
+old_timezone = pytz.timezone(args.timezone)
+gmt_timezone = pytz.timezone("GMT")
 
 if args.esindex and args.stdout:
     print()
@@ -198,7 +203,9 @@ if len(types) > 0 and len(fields) > 0:
                 if col != '-' and col != '(empty)':
                     if args.humantime:
                         mydt = datetime.datetime.fromtimestamp(float(col))
-                        d[fields[i]] = "{}T{}".format(mydt.date(), mydt.time())
+                        localized_mydt = old_timezone.localize(mydt)
+                        gmt_mydt = localized_mydt.astimezone(gmt_timezone)
+                        d[fields[i]] = "{}T{}".format(gmt_mydt.date(), gmt_mydt.time())
                     else:
                         if args.origtime:
                             d[fields[i]] = float(col)

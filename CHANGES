@@ -1,3 +1,4 @@
+v0.1.14 - Add timezone support.
 v0.1.13 - Tune down the -l parameter.
 v0.1.12 - Added origtime commnd line option.
 v0.1.11 - Improvements to processing speed.
