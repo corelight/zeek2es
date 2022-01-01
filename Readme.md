@@ -4,12 +4,10 @@ This Python application translates Zeek's ASCII TSV
 logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html#add-multiple-documents).
 For [JSON logs, see Elastic's File Beats application](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-zeek.html).
 
-This application will recognize gzip or uncompressed logs.  If you do not have
-ElasticSearch you can output the JSON to stdout with the `-s -b` command line options
+This application will recognize gzip or uncompressed logs.  This application assumes 
+you have ElasticSearch set up on your localhost at the default port.
+If you do not have ElasticSearch you can output the JSON to stdout with the `-s -b` command line options
 to process with the [jq application](https://stedolan.github.io/jq).
-
-This application assumes you have Elasticsearch set up on your
-localhost at the default port.
 
 This program assumes you are running it on a system with the same timezone that was used
 by Zeek originally.
