@@ -3,7 +3,6 @@ import subprocess
 import json
 import csv
 import io
-import os
 import requests
 import datetime
 import argparse
@@ -62,7 +61,7 @@ try:
 except:
     if not args.supresswarnings:
         print()
-        print("Date not found from Zeek log!")
+        print("Date not found from Zeek log! {}".format(filename))
         print()
     exit(-3)
 
