@@ -17,7 +17,8 @@ parser.add_argument('-l', '--lines', default=50000, type=int, help='Lines to buf
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-c', '--checkindex', action="store_true", help='Check for the ES index first, and if it exists exit this program.')
 parser.add_argument('-q', '--checkstate', action="store_true", help='Check the ES index state first, and if it exists exit this program.')
-parser.add_argument('-t', '--humantime', action="store_true", help='Keep the time in human format.')
+parser.add_argument('-t', '--humantime', action="store_true", help='Keep the time in human string format.')
+parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numberical time format, not milliseconds as ES needs.')
 parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
 parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die silently.')
@@ -200,7 +201,10 @@ if len(types) > 0 and len(fields) > 0:
                         mydt = datetime.datetime.fromtimestamp(float(col))
                         d[fields[i]] = "{}T{}".format(mydt.date(), mydt.time())
                     else:
-                        d[fields[i]] = float(col)*1000
+                        if args.origtime:
+                            d[fields[i]] = float(col)
+                        else:
+                            d[fields[i]] = float(col)*1000
                     added_val = True
             elif types[i] == "interval" or types[i] == "double":
                 if col != '-' and col != '(empty)':
