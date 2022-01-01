@@ -17,6 +17,8 @@ import pytz
 print(pytz.all_timezones)
 ```
 
+No other Python libraries are needed to run this application.
+
 ## Command Line:
 
 ```
@@ -62,4 +64,3 @@ optional arguments:
 
 - A Unix-like environment (MacOs works!)
 - Python
-- zeek-cut in your path
