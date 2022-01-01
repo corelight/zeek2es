@@ -12,7 +12,7 @@ parser.add_argument('filename',
                      help='The Zeek log in *.log or *.gz format.  Include the full path.')
 parser.add_argument('-i', '--esindex', help='The Elasticsearch index name.')
 parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The Elasticsearch URL. (default: http://localhost:9200/)')
-parser.add_argument('-l', '--lines', default=50000, type=int, help='Lines to buffer for RESTful operations. (default: 50,000)')
+parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 50,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-c', '--checkindex', action="store_true", help='Check for the ES index first, and if it exists exit this program.')
 parser.add_argument('-q', '--checkstate', action="store_true", help='Check the ES index state first, and if it exists exit this program.')

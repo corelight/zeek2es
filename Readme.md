@@ -42,7 +42,7 @@ optional arguments:
   -u ESURL, --esurl ESURL
                         The Elasticsearch URL. (default: http://localhost:9200/)
   -l LINES, --lines LINES
-                        Lines to buffer for RESTful operations. (default: 50,000)
+                        Lines to buffer for RESTful operations. (default: 10,000)
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
   -c, --checkindex      Check for the ES index first, and if it exists exit this program.
   -q, --checkstate      Check the ES index state first, and if it exists exit this program.
