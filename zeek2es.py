@@ -201,16 +201,16 @@ if len(types) > 0 and len(fields) > 0:
         for col in row:
             if types[i] == "time":
                 if col != '-' and col != '(empty)':
+                    mydt = datetime.datetime.fromtimestamp(float(col))
+                    localized_mydt = old_timezone.localize(mydt)
+                    gmt_mydt = localized_mydt.astimezone(gmt_timezone)
                     if args.humantime:
-                        mydt = datetime.datetime.fromtimestamp(float(col))
-                        localized_mydt = old_timezone.localize(mydt)
-                        gmt_mydt = localized_mydt.astimezone(gmt_timezone)
                         d[fields[i]] = "{}T{}".format(gmt_mydt.date(), gmt_mydt.time())
                     else:
                         if args.origtime:
-                            d[fields[i]] = float(col)
+                            d[fields[i]] = gmt_mydt.timestamp()
                         else:
-                            d[fields[i]] = float(col)*1000
+                            d[fields[i]] = gmt_mydt.timestamp()*1000
                     added_val = True
             elif types[i] == "interval" or types[i] == "double":
                 if col != '-' and col != '(empty)':
