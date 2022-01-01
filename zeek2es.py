@@ -17,6 +17,7 @@ parser.add_argument('-l', '--lines', default=50000, type=int, help='Lines to buf
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-c', '--checkindex', action="store_true", help='Check for the ES index first, and if it exists exit this program.')
 parser.add_argument('-q', '--checkstate', action="store_true", help='Check the ES index state first, and if it exists exit this program.')
+parser.add_argument('-t', '--keeptime', action="store_true", help='Keep the time in number format.')
 parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
 parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die silently.')
@@ -161,7 +162,11 @@ zcat_process = subprocess.Popen(zcat_name+[filename],
                                 stdout=subprocess.PIPE)
 
 devnull = open(os.devnull, 'w')
-zeek_cut_process = subprocess.Popen(['zeek-cut', '-d', '-u'], 
+zeek_cut_list = ['grep', '-v', '#']
+if not args.keeptime:
+    zeek_cut_list += ['zeek-cut', '-d', '-u']
+
+zeek_cut_process = subprocess.Popen(zeek_cut_list, 
                                     stdin=zcat_process.stdout,
                                     stdout=subprocess.PIPE,
                                     stderr=devnull)
@@ -197,7 +202,10 @@ if len(types) > 0 and len(fields) > 0:
         for col in row:
             if types[i] == "time":
                 if col != '-' and col != '(empty)':
-                    d[fields[i]] = col
+                    if args.keeptime:
+                        d[fields[i]] = float(col)
+                    else:
+                        d[fields[i]] = col
                     added_val = True
             elif types[i] == "interval" or types[i] == "double":
                 if col != '-' and col != '(empty)':

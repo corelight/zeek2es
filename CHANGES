@@ -1,3 +1,4 @@
+v0.1.10 - Add option to keep original times.
 v0.1.9 - Remove stderr output from zeek-cut.
 v0.1.8 - Added system name to log, if available.
 v0.1.7 - Improved index name generation.
