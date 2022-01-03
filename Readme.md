@@ -41,6 +41,19 @@ find /usr/local/var/logs -name "*.log.gz" -exec python ~/Source/zeek2es/zeek2es.
 
 You can use much more complex jq queries than this if you are familiar with jq.
 
+If you want to remove all of your Zeek data from ElasticSearch, this command will do it for you:
+
+```
+curl -X DELETE http://localhost:9200/zeek*
+```
+
+Since the indices have the date appended to them, you could
+delete Jan 1, 2022 with the following command:
+
+```
+curl -X DELETE http://localhost:9200/zeek_2022-01-01*
+```
+
 ## Command Line Options:
 
 ```
