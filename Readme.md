@@ -47,7 +47,7 @@ You can use much more complex jq queries than this if you are familiar with jq.
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-c] [-q] [-t] [-r] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-j] [-c] [-q] [-t] [-r] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -64,7 +64,8 @@ optional arguments:
                         Lines to buffer for RESTful operations. (default: 10,000)
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
   -m TIMEZONE, --timezone TIMEZONE
-                        The time zone of the Zeek log. Any value in Python's pytz.all_timezones is acceptable.  (default: GMT)
+                        The time zone of the Zeek logs. (default: GMT)
+  -j, --jsonlogs        Assume input logs are JSON.
   -c, --checkindex      Check for the ES index first, and if it exists exit this program.
   -q, --checkstate      Check the ES index state first, and if it exists exit this program.
   -t, --humantime       Keep the time in human string format.

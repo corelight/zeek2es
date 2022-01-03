@@ -1,3 +1,4 @@
+v0.1.16 - Added JSON input support with -j.
 v0.1.15 - Fix a bug with timezone translation.
 v0.1.14 - Add timezone support.
 v0.1.13 - Tune down the -l parameter.
