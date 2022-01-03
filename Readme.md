@@ -34,6 +34,15 @@ This script can be run in parallel on all connection logs, 10 at a time, with th
 find /some/dir -name “conn*.log.gz” | parallel -j 10 python zeek2es.py {1} :::: -
 ```
 
+If you have the jq command installed you can perform searches across all your logs for a common
+field like connection uid, even without ElasticSearch:
+
+```
+find /usr/local/var/logs -name "*.log.gz" -exec python ~/Source/zeek2es/zeek2es.py {} -s -b -z \; | jq -c '. | select(.uid=="CLbPij1vThLvQ2qDKh")'
+```
+
+You can use much more complex jq queries than this if you are familiar with jq.
+
 ## Command Line Options:
 
 ```
