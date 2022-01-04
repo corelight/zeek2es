@@ -77,8 +77,8 @@ optional arguments:
   -m TIMEZONE, --timezone TIMEZONE
                         The time zone of the Zeek logs. (default: GMT)
   -j, --jsonlogs        Assume input logs are JSON.
-  -r, --origtime        Keep the numberical time format, not milliseconds as ES needs.
-  -t, --humantime       Keep the time in human string format.
+  -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
+  -t, --timestamp       Keep the time in timestamp format.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
   -b, --nobulk          Remove the ES bulk JSON header. Requires --stdout.
   -z, --supresswarnings

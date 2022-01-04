@@ -6,7 +6,6 @@ import io
 import requests
 import datetime
 import pytz
-import os
 import re
 import argparse
 
@@ -19,8 +18,8 @@ parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buf
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
 parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
-parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numberical time format, not milliseconds as ES needs.')
-parser.add_argument('-t', '--humantime', action="store_true", help='Keep the time in human string format.')
+parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
+parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
 parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
 parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die silently.')
@@ -40,6 +39,12 @@ if args.nobulk and not args.stdout:
     print("The nobulk option can only be used with the stdout option.")
     print()
     exit(-2)
+
+if not args.timestamp and args.origtime:
+    print()
+    print("The origtime option can only be used with the timestamp option.")
+    print()
+    exit(-3)
 
 filename = args.filename
                 
@@ -70,7 +75,7 @@ if not args.jsonlogs:
             print()
             print("Date not found from Zeek log! {}".format(filename))
             print()
-        exit(-3)
+        exit(-4)
 
     # Get the path
 
@@ -171,7 +176,7 @@ if not args.jsonlogs:
                         mydt = datetime.datetime.fromtimestamp(float(col))
                         localized_mydt = old_timezone.localize(mydt)
                         gmt_mydt = localized_mydt.astimezone(gmt_timezone)
-                        if args.humantime:
+                        if not args.timestamp:
                             d[fields[i]] = "{}T{}".format(gmt_mydt.date(), gmt_mydt.time())
                         else:
                             if args.origtime:
@@ -201,14 +206,15 @@ if not args.jsonlogs:
                         added_val = True
                 i += 1
 
-            if added_val:
+            if added_val and "ts" in d:
                 if not args.nobulk:
                     outstring += "{ \"index\": { } }\n"
+                d["@timestamp"] = d["ts"]
                 outstring += json.dumps(d)+"\n"
                 n += 1
                 items += 1
                 if not args.stdout:
-                    if putmapping is False:
+                    if putmapping == False:
                         res = requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
                                             data=json.dumps(mappings).encode('UTF-8'))
                         putmapping = True
@@ -247,52 +253,77 @@ else:
     outstring = ""
     es_index = ""
 
+    # Put mappings
+
+    mappings = {"mappings": {"properties": {"ts": {"type": "date"}}}}
+    putmapping = False
+
     while True:
         line = j_in.readline()
+        
         if not line:
             break
 
-        if es_index == "":
-            j_data = json.loads(line)
+        j_data = json.loads(line)
+
+        if "ts" in j_data:
             mydt = datetime.datetime.fromtimestamp(float(j_data["ts"]))
             localized_mydt = old_timezone.localize(mydt)
             gmt_mydt = localized_mydt.astimezone(gmt_timezone)
-            sysname = ""
 
-            if (len(args.name) > 0):
-                sysname = "{}_".format(args.name)
-
-            lower_filename = os.path.basename(filename).lower()
-
-            try:
-                zeek_log_path = re.search(".*\/([^\._]+).*", lower_filename).group(1)
-            except:
-                print()
-                print("Log path cannot be found from filename: {}".format(filename))
-                print()
-                exit(-8)
-
-            es_index = "zeek_{}{}_{}".format(sysname, zeek_log_path, gmt_mydt.date())
-            es_index = es_index.replace(':', '_').replace("/", "_")
-
-        items += 1
-
-        if not args.nobulk:
-            outstring += "{ \"index\": { } }\n"
-        outstring += line
-        n += 1
-
-        if n >= args.lines:
-            if not args.stdout:
-                res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
-                                    data=outstring.encode('UTF-8'))
-                if not res.ok:
-                    if not args.supresswarnings:
-                        print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
+            if not args.timestamp:
+                j_data["ts"] = "{}T{}".format(gmt_mydt.date(), gmt_mydt.time())
             else:
-                print(outstring)
-            outstring = ""
-            n = 0
+                if args.origtime:
+                    j_data["ts"] = gmt_mydt.timestamp()
+                else:
+                    # ES uses ms
+                    j_data["ts"] = gmt_mydt.timestamp()*1000
+
+            if es_index == "":
+                sysname = ""
+
+                if (len(args.name) > 0):
+                    sysname = "{}_".format(args.name)
+
+                zeek_log_path = re.search(".*\/([^\._]+).*", filename).group(1)
+
+                try:
+                    zeek_log_path = re.search(".*\/([^\._]+).*", filename).group(1).lower()
+                except:
+                    print()
+                    print("Log path cannot be found from filename: {}".format(filename))
+                    print()
+                    exit(-5)
+
+                es_index = "zeek_{}{}_{}".format(sysname, zeek_log_path, gmt_mydt.date())
+                es_index = es_index.replace(':', '_').replace("/", "_")
+
+            if not args.stdout:
+                if putmapping == False:
+                    res = requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
+                                        data=json.dumps(mappings).encode('UTF-8'))
+                    putmapping = True
+
+            items += 1
+
+            if not args.nobulk:
+                outstring += "{ \"index\": { } }\n"
+            j_data["@timestamp"] = j_data["ts"]
+            outstring += json.dumps(j_data) + "\n"
+            n += 1
+
+            if n >= args.lines:
+                if not args.stdout:
+                    res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
+                                        data=outstring.encode('UTF-8'))
+                    if not res.ok:
+                        if not args.supresswarnings:
+                            print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
+                else:
+                    print(outstring)
+                outstring = ""
+                n = 0
 
     if n != 0:
         # One last time
@@ -308,7 +339,6 @@ else:
 # Use a state document in our ES instance
 if not args.stdout and items > 0:
     now = datetime.datetime.utcnow()
-#    d = dict(zeek_log_imported_filename=filename, items=items, ts="{}T{}Z".format(now.date(), now.time()))
     d = dict(zeek_log_imported_filename=filename, items=items, ts=now.timestamp())
     if len(zeek_log_path) > 0:
         d["zeek_log_path"] = zeek_log_path
