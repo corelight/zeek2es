@@ -48,10 +48,10 @@ curl -X DELETE http://localhost:9200/zeek*
 ```
 
 Since the indices have the date appended to them, you could
-delete Jan 1, 2022 with the following command:
+delete Dec 31, 2021 with the following command:
 
 ```
-curl -X DELETE http://localhost:9200/zeek_2022-01-01*
+curl -X DELETE http://localhost:9200/zeek_2021-12-31
 ```
 
 ## Command Line Options:
