@@ -89,3 +89,9 @@ optional arguments:
 
 - A Unix-like environment (MacOs works!)
 - Python
+
+## Notes:
+
+- Since Zeek JSON logs do not have type information like the ASCII TSV versions, only limited type information 
+can be provided to ElasticSearch.  Saving Zeek logs in ASCII TSV format will provide for greater
+long term flexibility.
