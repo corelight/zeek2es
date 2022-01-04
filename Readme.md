@@ -51,7 +51,7 @@ Since the indices have the date appended to them, you could
 delete Dec 31, 2021 with the following command:
 
 ```
-curl -X DELETE http://localhost:9200/zeek_2021-12-31
+curl -X DELETE http://localhost:9200/zeek_*_2021-12-31
 ```
 
 ## Command Line Options:
