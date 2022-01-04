@@ -54,6 +54,12 @@ delete Dec 31, 2021 with the following command:
 curl -X DELETE http://localhost:9200/zeek_*_2021-12-31
 ```
 
+You could delete all conn.log entries with this command:
+
+```
+curl -X DELETE http://localhost:9200/zeek_conn_*
+```
+
 ## Command Line Options:
 
 ```
