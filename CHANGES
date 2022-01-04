@@ -1,5 +1,6 @@
 v0.2.0  Removed some index checking, made indices on log type and day to 
-        reduce the number of open indices.  Other odds and ends.
+        reduce the number of open indices.  Remove state documents.
+        Other odds and ends.
 v0.1.16 Added JSON input support with -j.
 v0.1.15 Fix a bug with timezone translation.
 v0.1.14 Add timezone support.

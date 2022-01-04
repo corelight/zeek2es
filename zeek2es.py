@@ -335,16 +335,3 @@ else:
                     print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
         else:
             print(outstring)
-
-# Use a state document in our ES instance
-if not args.stdout and items > 0:
-    now = datetime.datetime.utcnow()
-    d = dict(zeek_log_imported_filename=filename, items=items, ts=now.timestamp())
-    if len(zeek_log_path) > 0:
-        d["zeek_log_path"] = zeek_log_path
-    if len(args.name) > 0:
-        d["zeek_log_system_name"] = args.name
-    res = requests.post(args.esurl+es_index+'/_doc', json=d)
-    if not res.ok:
-        if not args.supresswarnings:
-            print("WARNING! POST did not return OK to save your state info! Your index state {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
