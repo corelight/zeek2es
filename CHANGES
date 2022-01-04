@@ -1,17 +1,19 @@
-v0.1.16 - Added JSON input support with -j.
-v0.1.15 - Fix a bug with timezone translation.
-v0.1.14 - Add timezone support.
-v0.1.13 - Tune down the -l parameter.
-v0.1.12 - Added origtime commnd line option.
-v0.1.11 - Improvements to processing speed.
-v0.1.10 - Add option to keep original times.
-v0.1.9 - Remove stderr output from zeek-cut.
-v0.1.8 - Added system name to log, if available.
-v0.1.7 - Improved index name generation.
-v0.1.6 - Get date from log rather than path.
-v0.1.5 - Added more debug output.
-v0.1.4 - Added some error checking.
-v0.1.3 - Added number of items processed to state document.
-v0.1.2 - Added state information and --checkstate command line option.
-v0.1.1 - Added file name to JSON documents.
-v0.1.0 - Initial release.
+v0.2.0  Removed some index checking, made indices on log type and day to 
+        reduce the number of open indices.
+v0.1.16 Added JSON input support with -j.
+v0.1.15 Fix a bug with timezone translation.
+v0.1.14 Add timezone support.
+v0.1.13 Tune down the -l parameter.
+v0.1.12 Added origtime commnd line option.
+v0.1.11 Improvements to processing speed.
+v0.1.10 Add option to keep original times.
+v0.1.9  Remove stderr output from zeek-cut.
+v0.1.8  Added system name to log, if available.
+v0.1.7  Improved index name generation.
+v0.1.6  Get date from log rather than path.
+v0.1.5  Added more debug output.
+v0.1.4  Added some error checking.
+v0.1.3  Added number of items processed to state document.
+v0.1.2  Added state information and --checkstate command line option.
+v0.1.1  Added file name to JSON documents.
+v0.1.0  Initial release.
