@@ -58,7 +58,7 @@ curl -X DELETE http://localhost:9200/zeek_2022-01-01*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-j] [-c] [-q] [-t] [-r] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-j] [-r] [-t] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -77,10 +77,8 @@ optional arguments:
   -m TIMEZONE, --timezone TIMEZONE
                         The time zone of the Zeek logs. (default: GMT)
   -j, --jsonlogs        Assume input logs are JSON.
-  -c, --checkindex      Check for the ES index first, and if it exists exit this program.
-  -q, --checkstate      Check the ES index state first, and if it exists exit this program.
-  -t, --humantime       Keep the time in human string format.
   -r, --origtime        Keep the numberical time format, not milliseconds as ES needs.
+  -t, --humantime       Keep the time in human string format.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
   -b, --nobulk          Remove the ES bulk JSON header. Requires --stdout.
   -z, --supresswarnings

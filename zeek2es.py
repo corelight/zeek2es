@@ -7,6 +7,7 @@ import requests
 import datetime
 import pytz
 import os
+import re
 import argparse
 
 parser = argparse.ArgumentParser(description='Process Zeek ASCII logs into Elasticsearch.')
@@ -18,10 +19,8 @@ parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buf
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
 parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
-parser.add_argument('-c', '--checkindex', action="store_true", help='Check for the ES index first, and if it exists exit this program.')
-parser.add_argument('-q', '--checkstate', action="store_true", help='Check the ES index state first, and if it exists exit this program.')
-parser.add_argument('-t', '--humantime', action="store_true", help='Keep the time in human string format.')
 parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numberical time format, not milliseconds as ES needs.')
+parser.add_argument('-t', '--humantime', action="store_true", help='Keep the time in human string format.')
 parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
 parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die silently.')
@@ -89,50 +88,15 @@ if not args.jsonlogs:
     zeek_log_path = grep_process.communicate()[0].decode('UTF-8').strip().split('\t')[1]
 
     if not args.esindex:
-        es_index = "{}_{}_{}".format(log_date.date(), log_date.time(), zeek_log_path)
+        sysname = ""
+        if (len(args.name) > 0):
+            sysname = "{}_".format(args.name)
+
+        es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, log_date.date())
     else:
         es_index = args.esindex
 
-    sysname = ""
-    if (len(args.name) > 0):
-        sysname = "{}_".format(args.name)
-
-    es_index = "zeek_"+sysname+es_index.replace(':', '_').replace("/", "_")
-
-    if args.checkindex:
-        if args.stdout:
-            if not args.supresswarnings:
-                print()
-                print("You cannot check the index and dump the data to stdout.")
-                print()
-            exit(-4)
-
-        res = requests.get(args.esurl+es_index)
-        if res.ok:
-            if not args.supresswarnings:
-                print()
-                print("This index {} already exists.  Exiting.".format(es_index))
-                print()
-            exit(-5)
-
-    if args.checkstate:
-        if args.stdout:
-            if not args.supresswarnings:
-                print()
-                print("You cannot check the index state and dump the data to stdout.")
-                print()
-            exit(-6)
-            
-        res = requests.get(args.esurl+es_index+'/_search', json=dict(query=dict(match=dict(zeek_log_imported_filename=filename))))
-        if res.ok:
-            for hit in res.json()['hits']['hits']:
-                data = hit["_source"]
-                if data['zeek_log_imported_filename'] == filename:
-                    if not args.supresswarnings:
-                        print()
-                        print("This index {} is already completed.  Exiting.".format(es_index))
-                        print()
-                    exit(-7)
+    es_index = es_index.replace(':', '_').replace("/", "_")
 
     # Get the Zeek fields
 
@@ -245,9 +209,8 @@ if not args.jsonlogs:
                 items += 1
                 if not args.stdout:
                     if putmapping is False:
-                        requests.delete(args.esurl+es_index)
-                        requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
-                                        data=json.dumps(mappings).encode('UTF-8'))
+                        res = requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
+                                            data=json.dumps(mappings).encode('UTF-8'))
                         putmapping = True
 
             if n >= args.lines:
@@ -283,7 +246,7 @@ else:
     n = 0
     outstring = ""
     es_index = ""
-    
+
     while True:
         line = j_in.readline()
         if not line:
@@ -295,9 +258,21 @@ else:
             localized_mydt = old_timezone.localize(mydt)
             gmt_mydt = localized_mydt.astimezone(gmt_timezone)
             sysname = ""
+
             if (len(args.name) > 0):
                 sysname = "{}_".format(args.name)
-            es_index = "zeek_{}{}_{}_{}".format(sysname, gmt_mydt.date(), gmt_mydt.time(), os.path.basename(filename).lower())
+
+            lower_filename = os.path.basename(filename).lower()
+
+            try:
+                zeek_log_path = re.search(".*\/([^\._]+).*", lower_filename).group(1)
+            except:
+                print()
+                print("Log path cannot be found from filename: {}".format(filename))
+                print()
+                exit(-8)
+
+            es_index = "zeek_{}{}_{}".format(sysname, zeek_log_path, gmt_mydt.date())
             es_index = es_index.replace(':', '_').replace("/", "_")
 
         items += 1
@@ -331,7 +306,7 @@ else:
             print(outstring)
 
 # Use a state document in our ES instance
-if not args.stdout:
+if not args.stdout and items > 0:
     now = datetime.datetime.utcnow()
 #    d = dict(zeek_log_imported_filename=filename, items=items, ts="{}T{}Z".format(now.date(), now.time()))
     d = dict(zeek_log_imported_filename=filename, items=items, ts=now.timestamp())
