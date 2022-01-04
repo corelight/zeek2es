@@ -303,6 +303,9 @@ else:
                                         data=json.dumps(mappings).encode('UTF-8'))
                     putmapping = True
 
+            if (len(args.name) > 0):
+                j_data["zeek_log_system_name"] = args.name
+
             items += 1
 
             if not args.nobulk:
