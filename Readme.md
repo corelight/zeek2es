@@ -93,5 +93,8 @@ optional arguments:
 ## Notes:
 
 - Since Zeek JSON logs do not have type information like the ASCII TSV versions, only limited type information 
-can be provided to ElasticSearch.  Saving Zeek logs in ASCII TSV format will provide for greater
-long term flexibility.
+can be provided to ElasticSearch.  You will notice this most for Zeek "addr" log fields that 
+are not id$orig_h and id$resp_h, since the type information is not available to translate the field into 
+ElasticSearch's "ip" type.  Since address fields will not be of type "ip", you will not be able to use 
+subnet searches, for example, like you could for the TSV logs.  Saving Zeek logs in ASCII TSV 
+format provides for greater long term flexibility.
