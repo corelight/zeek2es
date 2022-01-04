@@ -17,6 +17,7 @@ parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The
 parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
+parser.add_argument('-p', '--pipeline', default="", help='The ElasticSearch pipeline to use. (default: None)')
 parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
 parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
 parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
@@ -208,7 +209,10 @@ if not args.jsonlogs:
 
             if added_val and "ts" in d:
                 if not args.nobulk:
-                    outstring += "{ \"index\": { } }\n"
+                    i = dict(index=dict(_index=es_index))
+                    if (len(args.pipeline) > 0):
+                        i["index"]["pipeline"] = args.pipeline
+                    outstring += json.dumps(i)+"\n"
                 d["@timestamp"] = d["ts"]
                 outstring += json.dumps(d)+"\n"
                 n += 1
@@ -221,7 +225,7 @@ if not args.jsonlogs:
 
             if n >= args.lines:
                 if not args.stdout:
-                    res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
+                    res = requests.put(args.esurl+'/_bulk', headers={'Content-Type': 'application/json'},
                                         data=outstring.encode('UTF-8'))
                     if not res.ok:
                         if not args.supresswarnings:
@@ -234,7 +238,7 @@ if not args.jsonlogs:
         if n != 0:
             # One last time
             if not args.stdout:
-                res = requests.put(args.esurl+es_index+'/_bulk', headers={'Content-Type': 'application/json'},
+                res = requests.put(args.esurl+'/_bulk', headers={'Content-Type': 'application/json'},
                                     data=outstring.encode('UTF-8'))
                 if not res.ok:
                     if not args.supresswarnings:
@@ -309,7 +313,10 @@ else:
             items += 1
 
             if not args.nobulk:
-                outstring += "{ \"index\": { } }\n"
+                i = dict(index=dict(_index=es_index))
+                if (len(args.pipeline) > 0):
+                    i["index"]["pipeline"] = args.pipeline
+                outstring += json.dumps(i)+"\n"
             j_data["@timestamp"] = j_data["ts"]
             outstring += json.dumps(j_data) + "\n"
             n += 1

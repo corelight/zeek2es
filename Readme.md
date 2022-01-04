@@ -98,7 +98,46 @@ optional arguments:
 
 ## Notes:
 
-- Since Zeek JSON logs do not have type information like the ASCII TSV versions, only limited type information 
+### Geo Locate IP Addresses
+
+It is recommended to set up a pipeline to geo locate IP addresses on import.  You can do that with this command:
+
+```
+curl -X PUT "localhost:9200/_ingest/pipeline/zeekgeoip?pretty" -H 'Content-Type: application/json' -d'
+{
+    "description" : "Add geoip info",
+    "processors" : [
+        {
+            "dot_expander": {
+                "field": "*"
+            }
+        },
+        {
+            "geoip" : {
+                "field" : "id.orig_h",
+                "target_field": "geoip_orig",
+                "ignore_missing": true
+            }
+        },
+        {
+            "geoip" : {
+                "field" : "id.resp_h",
+                "target_field": "geoip_resp",
+                "ignore_missing": true
+            }
+        }  
+      ]
+}
+'
+```
+
+When you have the above ingest pipeline installed, you can run your data through it with 
+the `-p zeekgeoip` command line option to zeek2es.py. If successful, ES will populate the 
+target fields listed above with geography information.
+
+### JSON Log Input
+
+Since Zeek JSON logs do not have type information like the ASCII TSV versions, only limited type information 
 can be provided to ElasticSearch.  You will notice this most for Zeek "addr" log fields that 
 are not id$orig_h and id$resp_h, since the type information is not available to translate the field into 
 ElasticSearch's "ip" type.  Since address fields will not be of type "ip", you will not be able to use 
