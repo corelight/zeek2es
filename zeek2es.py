@@ -255,7 +255,7 @@ else:
 
     # Put mappings
 
-    mappings = {"mappings": {"properties": {"ts": {"type": "date"}}}}
+    mappings = {"mappings": {"properties": {"ts": {"type": "date"}, "id.orig_h": {"type": "ip"}, "id.resp_h": {"type": "ip"}}}}
     putmapping = False
 
     while True:
@@ -285,8 +285,6 @@ else:
 
                 if (len(args.name) > 0):
                     sysname = "{}_".format(args.name)
-
-                zeek_log_path = re.search(".*\/([^\._]+).*", filename).group(1)
 
                 try:
                     zeek_log_path = re.search(".*\/([^\._]+).*", filename).group(1).lower()
