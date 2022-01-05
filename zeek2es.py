@@ -17,14 +17,13 @@ parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The
 parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
-parser.add_argument('-g', '--geolocate', action="store_true", help='Geolocate IP addresses upon ES ingestion.')
-parser.add_argument('-e', '--splitservice', action="store_true", help='Split the service field into a list.')
+parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
 parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
 parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
 parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
 parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
 parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
-parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die silently.')
+parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die stoically and silently.')
 args = parser.parse_args()
 
 old_timezone = pytz.timezone(args.timezone)
@@ -58,13 +57,11 @@ else:
 
 ingest_pipeline = {"description": "Zeek Log Ingestion Pipeline.", "processors": [ ]}
 
-if args.geolocate:
+if args.ingestion:
     ingest_pipeline["processors"] += [{"dot_expander": {"field": "*"}}]
+    ingest_pipeline["processors"] += [{"split": {"field": "service", "separator": ",", "ignore_missing": True, "ignore_failure": True}}]
     ingest_pipeline["processors"] += [{"geoip": {"field": "id.orig_h", "target_field": "geoip_orig", "ignore_missing": True}}]
     ingest_pipeline["processors"] += [{"geoip": {"field": "id.resp_h", "target_field": "geoip_resp", "ignore_missing": True}}]
-
-if args.splitservice:
-    ingest_pipeline["processors"] += [{"split": {"field": "service", "separator": ",", "ignore_missing": True, "ignore_failure": True}}]
 
 if not args.jsonlogs:
     # Get the date
