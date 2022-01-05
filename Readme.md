@@ -1,6 +1,6 @@
 # zeek2es.py
 
-This Python application translates Zeek's ASCII TSV and JSON
+This Python application translates [Zeek's](https://zeek.org/) ASCII TSV and JSON
 logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html#add-multiple-documents).
 
 ![Kibana](images/kibana.png)
