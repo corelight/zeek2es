@@ -129,3 +129,5 @@ through Kibana's Stack Management->Ingest Pipelines or this command will do it f
 ```
 curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
 ```
+
+This command is recommended whenever updating your copy of zeek2es.py.
