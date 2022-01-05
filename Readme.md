@@ -100,47 +100,6 @@ optional arguments:
 
 ## Notes:
 
-### Geo Locate IP Addresses
-
-It is recommended to set up a pipeline to 
-[geo locate IP addresses on import](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/geoip-processor.html).  You 
-can do that with this command:
-
-```
-curl -X PUT "localhost:9200/_ingest/pipeline/zeekgeoip?pretty" -H 'Content-Type: application/json' -d'
-{
-    "description" : "Add geoip info",
-    "processors" : [
-        {
-            "dot_expander": {
-                "field": "*"
-            }
-        },
-        {
-            "geoip" : {
-                "field" : "id.orig_h",
-                "target_field": "geoip_orig",
-                "ignore_missing": true
-            }
-        },
-        {
-            "geoip" : {
-                "field" : "id.resp_h",
-                "target_field": "geoip_resp",
-                "ignore_missing": true
-            }
-        }  
-      ]
-}
-'
-```
-
-More info about "dot_expander" [can be found here](https://www.elastic.co/guide/en/elasticsearch/reference/8.0/dot-expand-processor.html).
-
-When you have the above ingest pipeline installed, you can run your data through it with 
-the `-p zeekgeoip` command line option to zeek2es.py. If successful, ES will populate the 
-target fields listed above with geography information.
-
 ### JSON Log Input
 
 Since Zeek JSON logs do not have type information like the ASCII TSV versions, only limited type information 

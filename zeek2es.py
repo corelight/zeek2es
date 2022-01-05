@@ -17,7 +17,7 @@ parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The
 parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
-parser.add_argument('-p', '--pipeline', default="", help='The ElasticSearch pipeline to use. (default: None)')
+parser.add_argument('-p', '--pipeline', default="zeekgeoip", help='The ElasticSearch pipeline to use. (default: zeekgeoip)')
 parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
 parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
 parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
@@ -54,6 +54,12 @@ if filename.split(".")[-1].lower() == "gz":
     zcat_name = ["gzip", "-d", "-c"]
 else:
     zcat_name = ["cat"]
+
+ingest_pipeline = {"description": "Add Zeek GeoIP info.", "processors": [
+    {"dot_expander": {"field": "*"}},
+    {"geoip": {"field": "id.orig_h", "target_field": "geoip_orig", "ignore_missing": True}},
+    {"geoip": {"field": "id.resp_h", "target_field": "geoip_resp", "ignore_missing": True}},
+]}
 
 if not args.jsonlogs:
     # Get the date
@@ -162,6 +168,7 @@ if not args.jsonlogs:
         # Put data
 
         putmapping = False
+        putpipeline = False
         n = 0
         items = 0
         outstring = ""
@@ -222,6 +229,10 @@ if not args.jsonlogs:
                         res = requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
                                             data=json.dumps(mappings).encode('UTF-8'))
                         putmapping = True
+                    if putpipeline == False and len(args.pipeline) > 0:
+                        res = requests.put(args.esurl+"_ingest/pipeline/"+args.pipeline, headers={'Content-Type': 'application/json'},
+                                            data=json.dumps(ingest_pipeline).encode('UTF-8'))
+                        putpipeline = True
 
             if n >= args.lines:
                 if not args.stdout:
@@ -263,6 +274,7 @@ else:
     mappings["mappings"]["properties"]["id.orig_h"] = {"type": "ip"}
     mappings["mappings"]["properties"]["id.resp_h"] = {"type": "ip"}
     putmapping = False
+    putpipeline = False
 
     while True:
         line = j_in.readline()
@@ -308,6 +320,10 @@ else:
                     res = requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
                                         data=json.dumps(mappings).encode('UTF-8'))
                     putmapping = True
+                if putpipeline == False and len(args.pipeline) > 0:
+                    res = requests.put(args.esurl+"_ingest/pipeline/"+args.pipeline, headers={'Content-Type': 'application/json'},
+                                        data=json.dumps(ingest_pipeline).encode('UTF-8'))
+                    putpipeline = True
 
             if (len(args.name) > 0):
                 j_data["zeek_log_system_name"] = args.name
