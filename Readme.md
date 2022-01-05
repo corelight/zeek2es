@@ -76,7 +76,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-g] [-j] [-r] [-t] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-g] [-e] [-j] [-r] [-t] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -95,6 +95,7 @@ optional arguments:
   -m TIMEZONE, --timezone TIMEZONE
                         The time zone of the Zeek logs. (default: GMT)
   -g, --geolocate       Geolocate IP addresses upon ES ingestion.
+  -e, --splitservice    Split the service field into a list.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
