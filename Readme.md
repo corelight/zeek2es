@@ -115,3 +115,13 @@ are not id$orig_h and id$resp_h, since the type information is not available to 
 ElasticSearch's "ip" type.  Since address fields will not be of type "ip", you will not be able to use 
 subnet searches, for example, like you could for the TSV logs.  Saving Zeek logs in ASCII TSV 
 format provides for greater long term flexibility.
+
+### ES Ingest Pipeline
+
+If you need to [delete the ES ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/delete-pipeline-api.html) 
+used to geolocate IP addresses, you can either do it
+through Kibana's Stack Management->Ingest Pipelines or this command will do it for you:
+
+```
+curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
+```
