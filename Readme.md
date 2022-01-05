@@ -9,6 +9,10 @@ IP Addresses can be Geolocated with the `-g` command line option:
 
 ![Kibana](images/kibana-map.png)
 
+This application will "just work" when Zeek log formats change.  The logic reads
+the field names and associated types to set up the mappings correctly in
+ElasticSearch.
+
 This application will recognize gzip or uncompressed logs.  This application assumes 
 you have ElasticSearch set up on your localhost at the default port.
 If you do not have ElasticSearch you can output the JSON to stdout with the `-s -b` command line options
