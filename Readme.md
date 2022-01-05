@@ -64,7 +64,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-j] [-r] [-t] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-p PIPELINE] [-j] [-r] [-t] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -82,6 +82,8 @@ optional arguments:
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
   -m TIMEZONE, --timezone TIMEZONE
                         The time zone of the Zeek logs. (default: GMT)
+  -p PIPELINE, --pipeline PIPELINE
+                        The ElasticSearch pipeline to use. (default: None)
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
@@ -100,7 +102,9 @@ optional arguments:
 
 ### Geo Locate IP Addresses
 
-It is recommended to set up a pipeline to geo locate IP addresses on import.  You can do that with this command:
+It is recommended to set up a pipeline to 
+[geo locate IP addresses on import](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/geoip-processor.html).  You 
+can do that with this command:
 
 ```
 curl -X PUT "localhost:9200/_ingest/pipeline/zeekgeoip?pretty" -H 'Content-Type: application/json' -d'
