@@ -135,6 +135,8 @@ curl -X PUT "localhost:9200/_ingest/pipeline/zeekgeoip?pretty" -H 'Content-Type:
 '
 ```
 
+More info about "dot_expander" [can be found here](https://www.elastic.co/guide/en/elasticsearch/reference/8.0/dot-expand-processor.html).
+
 When you have the above ingest pipeline installed, you can run your data through it with 
 the `-p zeekgeoip` command line option to zeek2es.py. If successful, ES will populate the 
 target fields listed above with geography information.
