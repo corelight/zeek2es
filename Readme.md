@@ -5,9 +5,13 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 
 ![Kibana](images/kibana.png)
 
+You can perform subnet searching on Zeek's 'addr' type:
+
+![Kibana Subnet Searching](images/kibana-subnet-search.png)
+
 IP Addresses can be Geolocated with the `-g` command line option:
 
-![Kibana](images/kibana-map.png)
+![Kibana Mapping](images/kibana-map.png)
 
 This application will "just work" when Zeek log formats change.  The logic reads
 the field names and associated types to set up the mappings correctly in
