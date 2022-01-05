@@ -17,7 +17,7 @@ parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The
 parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
-parser.add_argument('-p', '--pipeline', default="zeekgeoip", help='The ElasticSearch pipeline to use. (default: zeekgeoip)')
+parser.add_argument('-g', '--geolocate', action="store_true", help='Geolocate IP addresses upon ES ingestion.')
 parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
 parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
 parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
@@ -217,8 +217,8 @@ if not args.jsonlogs:
             if added_val and "ts" in d:
                 if not args.nobulk:
                     i = dict(index=dict(_index=es_index))
-                    if (len(args.pipeline) > 0):
-                        i["index"]["pipeline"] = args.pipeline
+                    if (args.geolocate):
+                        i["index"]["pipeline"] = "zeekgeoip"
                     outstring += json.dumps(i)+"\n"
                 d["@timestamp"] = d["ts"]
                 outstring += json.dumps(d)+"\n"
@@ -229,8 +229,8 @@ if not args.jsonlogs:
                         res = requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
                                             data=json.dumps(mappings).encode('UTF-8'))
                         putmapping = True
-                    if putpipeline == False and len(args.pipeline) > 0:
-                        res = requests.put(args.esurl+"_ingest/pipeline/"+args.pipeline, headers={'Content-Type': 'application/json'},
+                    if putpipeline == False and args.geolocate:
+                        res = requests.put(args.esurl+"_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
                                             data=json.dumps(ingest_pipeline).encode('UTF-8'))
                         putpipeline = True
 
@@ -320,8 +320,8 @@ else:
                     res = requests.put(args.esurl+es_index, headers={'Content-Type': 'application/json'},
                                         data=json.dumps(mappings).encode('UTF-8'))
                     putmapping = True
-                if putpipeline == False and len(args.pipeline) > 0:
-                    res = requests.put(args.esurl+"_ingest/pipeline/"+args.pipeline, headers={'Content-Type': 'application/json'},
+                if putpipeline == False and args.geolocate:
+                    res = requests.put(args.esurl+"_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
                                         data=json.dumps(ingest_pipeline).encode('UTF-8'))
                     putpipeline = True
 
@@ -332,8 +332,8 @@ else:
 
             if not args.nobulk:
                 i = dict(index=dict(_index=es_index))
-                if (len(args.pipeline) > 0):
-                    i["index"]["pipeline"] = args.pipeline
+                if (args.geolocate):
+                    i["index"]["pipeline"] = "zeekgeoip"
                 outstring += json.dumps(i)+"\n"
             j_data["@timestamp"] = j_data["ts"]
             outstring += json.dumps(j_data) + "\n"

@@ -5,6 +5,10 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 
 ![Kibana](images/kibana.png)
 
+IP Addresses can be Geolocated with the `-g` command line option:
+
+![Kibana](images/kibana-map.png)
+
 This application will recognize gzip or uncompressed logs.  This application assumes 
 you have ElasticSearch set up on your localhost at the default port.
 If you do not have ElasticSearch you can output the JSON to stdout with the `-s -b` command line options
@@ -64,7 +68,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-p PIPELINE] [-j] [-r] [-t] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-g] [-j] [-r] [-t] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -82,8 +86,7 @@ optional arguments:
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
   -m TIMEZONE, --timezone TIMEZONE
                         The time zone of the Zeek logs. (default: GMT)
-  -p PIPELINE, --pipeline PIPELINE
-                        The ElasticSearch pipeline to use. (default: None)
+  -g, --geolocate       Geolocate IP addresses upon ES ingestion.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
