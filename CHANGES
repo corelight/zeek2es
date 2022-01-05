@@ -1,3 +1,4 @@
+v0.2.1  Added ES pipeline capability, which allows for Geolocation on IP addresses.
 v0.2.0  Removed some index checking, made indices on log type and day to 
         reduce the number of open indices.  Remove state documents.
         Other odds and ends.  Added @timestamp for ease.

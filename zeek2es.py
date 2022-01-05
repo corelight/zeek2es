@@ -149,7 +149,7 @@ if not args.jsonlogs:
 
         # Put mappings
 
-        mappings = {"mappings": {"properties": dict()}}
+        mappings = {"mappings": {"properties": dict(geoip_orig=dict(properties=dict(location=dict(type="geo_point"))), geoip_resp=dict(properties=dict(location=dict(type="geo_point"))))}}
 
         for i in range(len(fields)):
             if types[i] == "time":
@@ -259,7 +259,9 @@ else:
 
     # Put mappings
 
-    mappings = {"mappings": {"properties": {"ts": {"type": "date"}, "id.orig_h": {"type": "ip"}, "id.resp_h": {"type": "ip"}}}}
+    mappings = {"mappings": {"properties": dict(ts=dict(type="date"), geoip_orig=dict(properties=dict(location=dict(type="geo_point"))), geoip_resp=dict(properties=dict(location=dict(type="geo_point"))))}}
+    mappings["mappings"]["properties"]["id.orig_h"] = {"type": "ip"}
+    mappings["mappings"]["properties"]["id.resp_h"] = {"type": "ip"}
     putmapping = False
 
     while True:
