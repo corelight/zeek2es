@@ -25,6 +25,10 @@ IP Addresses can be Geolocated with the `-g` command line option:
 
 ![Kibana Mapping](images/kibana-map.png)
 
+Aggregations are simple and quick:
+
+![Kibana Aggregation](images/kibana-aggregation.png)
+
 This application will "just work" when Zeek log formats change.  The logic reads
 the field names and associated types to set up the mappings correctly in
 ElasticSearch.
