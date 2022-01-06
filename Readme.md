@@ -134,7 +134,7 @@ optional arguments:
 
 Most upgrades should be as simple as copying the newer [zeek2es.py](zeek2es.py) over 
 the old one.  In some cases, the ES ingest pipeline required for the `-g` command line option 
-might change during and upgrade.  Therefore, it is strongly recommend you delete 
+might change during an upgrade.  Therefore, it is strongly recommend you delete 
 your [ingest pipeline](#esingestpipeline) before you run a new version of zeek2es.py.
 
 ### ES Ingest Pipeline <a name="esingestpipeline" />
