@@ -21,6 +21,10 @@ You can perform subnet searching on Zeek's 'addr' type:
 
 ![Kibana Subnet Searching](images/kibana-subnet-search.png)
 
+You can create time series graphs, such as this NTP and HTTP graph:
+
+![Kibana Time Series](images/kibana-timeseries.png)
+
 IP Addresses can be Geolocated with the `-g` command line option:
 
 ![Kibana Mapping](images/kibana-map.png)
