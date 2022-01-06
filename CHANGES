@@ -1,3 +1,5 @@
+v0.2.3  Added keyword sub field capabilties with -k option.  
+        Added more documentation to readme.
 v0.2.2  Added a split ingest pipeline on the "service" field.
 v0.2.1  Added ES pipeline capability, which allows for Geolocation on IP addresses.
 v0.2.0  Removed some index checking, made indices on log type and day to 

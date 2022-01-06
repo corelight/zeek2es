@@ -17,6 +17,7 @@ parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The
 parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
 parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
 parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
+parser.add_argument('-k', '--keywords', default="service", help='A comma delimited list of text fields to add a keyword subfield. (default: service)')
 parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
 parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
 parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
@@ -29,22 +30,36 @@ args = parser.parse_args()
 old_timezone = pytz.timezone(args.timezone)
 gmt_timezone = pytz.timezone("GMT")
 
+keywords = []
+if (len(args.keywords) > 0):
+    try:
+        keywords = args.keywords.split(",")
+    except Exception as e:
+        if not args.supresswarnings:
+            print()
+            print("Your keywords did not comma split correctly.  Please try again. Exception: {}".format(e))
+            print()
+        exit(-6)
+
 if args.esindex and args.stdout:
-    print()
-    print("Cannot write to Elasticsearch and stdout at the same time.")
-    print()
+    if not args.supresswarnings:
+        print()
+        print("Cannot write to Elasticsearch and stdout at the same time.")
+        print()
     exit(-1)
 
 if args.nobulk and not args.stdout:
-    print()
-    print("The nobulk option can only be used with the stdout option.")
-    print()
+    if not args.supresswarnings:
+        print()
+        print("The nobulk option can only be used with the stdout option.")
+        print()
     exit(-2)
 
 if not args.timestamp and args.origtime:
-    print()
-    print("The origtime option can only be used with the timestamp option.")
-    print()
+    if not args.supresswarnings:
+        print()
+        print("The origtime option can only be used with the timestamp option.")
+        print()
     exit(-3)
 
 filename = args.filename
@@ -165,7 +180,11 @@ if not args.jsonlogs:
             elif types[i] == "addr":
                 mappings["mappings"]["properties"][fields[i]] = {"type": "ip"}
             elif types[i] == "string":
-                mappings["mappings"]["properties"][fields[i]] = {"type": "text"}
+                # Special cases
+                if fields[i] in keywords:
+                    mappings["mappings"]["properties"][fields[i]] = {"type": "text", "fields": { "keyword": { "type": "keyword" }}}
+                else:
+                    mappings["mappings"]["properties"][fields[i]] = {"type": "text"}
 
         # Put data
 
@@ -272,7 +291,8 @@ else:
 
     # Put mappings
 
-    mappings = {"mappings": {"properties": dict(ts=dict(type="date"), geoip_orig=dict(properties=dict(location=dict(type="geo_point"))), geoip_resp=dict(properties=dict(location=dict(type="geo_point"))))}}
+    mappings = {"mappings": {"properties": dict(ts=dict(type="date"), geoip_orig=dict(properties=dict(location=dict(type="geo_point"))), 
+                                                                        geoip_resp=dict(properties=dict(location=dict(type="geo_point"))))}}
     mappings["mappings"]["properties"]["id.orig_h"] = {"type": "ip"}
     mappings["mappings"]["properties"]["id.resp_h"] = {"type": "ip"}
     putmapping = False

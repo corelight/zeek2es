@@ -3,6 +3,18 @@
 This Python application translates [Zeek's](https://zeek.org/) ASCII TSV and JSON
 logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html#add-multiple-documents).
 
+## Table of Contents:
+- [Introduction](#introduction)
+- [Command Line](#commandline)
+- [Command Line Options](#commandlineoptions)
+- [Requirements](#requirements)
+- [Notes](#notes)
+  - [Upgrading zeek2es](#upgradingzeek2es)
+  - [ES Ingest Pipeline](#esingestpipeline)
+  - [JSON Log Input](#jsonloginput)
+
+## Introduction <a name="introduction" />
+
 ![Kibana](images/kibana.png)
 
 You can perform subnet searching on Zeek's 'addr' type:
@@ -30,9 +42,14 @@ import pytz
 print(pytz.all_timezones)
 ```
 
-No other Python libraries are needed to run this application.
+You can add a keyword subfield to text fields with the `-k` command line option.  This is useful
+for aggregations in Kibana.
 
-## Command Line:
+Also, no other Python libraries are needed to run this application.  If Python
+is already on your system, there is nothing additional for you to copy over
+to your machine than [Elasticsearch, Kibana](https://www.elastic.co/start), and [zeek2es.py](zeek2es.py).
+
+## Command Line: <a name="commandline" />
 
 ```
 python zeek2es.py your_zeek_log.gz -i your_es_index_name
@@ -72,11 +89,11 @@ You could delete all conn.log entries with this command:
 curl -X DELETE http://localhost:9200/zeek_conn_*
 ```
 
-## Command Line Options:
+## Command Line Options: <a name="commandlineoptions" />
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-g] [-j] [-r] [-t] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-k KEYWORDS] [-g] [-j] [-r] [-t] [-s] [-b] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -94,6 +111,8 @@ optional arguments:
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
   -m TIMEZONE, --timezone TIMEZONE
                         The time zone of the Zeek logs. (default: GMT)
+  -k KEYWORDS, --keywords KEYWORDS
+                        A comma delimited list of text fields to add a keyword subfield. (default: service)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services. Takes longer, but worth it.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
@@ -104,14 +123,33 @@ optional arguments:
                         Supress any type of warning. Die stoically and silently.
 ```
 
-## Requirements:
+## Requirements: <a name="requirements" />
 
 - A Unix-like environment (MacOs works!)
 - Python
 
-## Notes:
+## Notes: <a name="notes" />
 
-### JSON Log Input
+### Upgrading zeek2es <a name="upgradingzeek2es" />
+
+Most upgrades should be as simple as copying the newer [zeek2es.py](zeek2es.py) over 
+the old one.  In some cases, the ES ingest pipeline required for the `-g` command line option 
+might change during and upgrade.  Therefore, it is strongly recommend you delete 
+your [ingest pipeline](#esingestpipeline) before you run a new version of zeek2es.py.
+
+### ES Ingest Pipeline <a name="esingestpipeline" />
+
+If you need to [delete the "zeekgeoip" ES ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/delete-pipeline-api.html) 
+used to geolocate IP addresses with the `-g` command line option, you can either do it graphically
+through Kibana's Stack Management->Ingest Pipelines or this command will do it for you:
+
+```
+curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
+```
+
+This command is strongly recommended whenever updating your copy of zeek2es.py.
+
+### JSON Log Input <a name="jsonloginput" />
 
 Since Zeek JSON logs do not have type information like the ASCII TSV versions, only limited type information 
 can be provided to ElasticSearch.  You will notice this most for Zeek "addr" log fields that 
@@ -119,15 +157,3 @@ are not id$orig_h and id$resp_h, since the type information is not available to 
 ElasticSearch's "ip" type.  Since address fields will not be of type "ip", you will not be able to use 
 subnet searches, for example, like you could for the TSV logs.  Saving Zeek logs in ASCII TSV 
 format provides for greater long term flexibility.
-
-### ES Ingest Pipeline
-
-If you need to [delete the ES ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/delete-pipeline-api.html) 
-used to geolocate IP addresses, you can either do it
-through Kibana's Stack Management->Ingest Pipelines or this command will do it for you:
-
-```
-curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
-```
-
-This command is recommended whenever updating your copy of zeek2es.py.
