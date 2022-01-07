@@ -6,12 +6,12 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 ## Table of Contents:
 - [Introduction](#introduction)
 - [Installation](#installation)
+- [Upgrading zeek2es](#upgradingzeek2es)
+  - [ES Ingest Pipeline](#esingestpipeline)
 - [Command Line](#commandline)
 - [Command Line Options](#commandlineoptions)
 - [Requirements](#requirements)
 - [Notes](#notes)
-  - [Upgrading zeek2es](#upgradingzeek2es)
-  - [ES Ingest Pipeline](#esingestpipeline)
   - [JSON Log Input](#jsonloginput)
 
 ## Introduction <a name="introduction" />
@@ -61,7 +61,26 @@ to your machine than [Elasticsearch, Kibana](https://www.elastic.co/start), and 
 ## Installation: <a name="installation" />
 
 There is none.  You just copy [zeek2es.py](zeek2es.py) to your host and run it with Python.  If you are upgrading,
-please see [the notes section on upgrading zeek2es](#upgradingzeek2es).
+please see [the section on upgrading zeek2es](#upgradingzeek2es).
+
+## Upgrading zeek2es <a name="upgradingzeek2es" />
+
+Most upgrades should be as simple as copying the newer [zeek2es.py](zeek2es.py) over 
+the old one.  In some cases, the ES ingest pipeline required for the `-g` command line option 
+might change during an upgrade.  Therefore, it is strongly recommend you delete 
+your [ingest pipeline](#esingestpipeline) before you run a new version of zeek2es.py.
+
+### ES Ingest Pipeline <a name="esingestpipeline" />
+
+If you need to [delete the "zeekgeoip" ES ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/delete-pipeline-api.html) 
+used to geolocate IP addresses with the `-g` command line option, you can either do it graphically
+through Kibana's Stack Management->Ingest Pipelines or this command will do it for you:
+
+```
+curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
+```
+
+This command is strongly recommended whenever updating your copy of zeek2es.py.
 
 ## Command Line: <a name="commandline" />
 
@@ -143,25 +162,6 @@ optional arguments:
 - Python
 
 ## Notes: <a name="notes" />
-
-### Upgrading zeek2es <a name="upgradingzeek2es" />
-
-Most upgrades should be as simple as copying the newer [zeek2es.py](zeek2es.py) over 
-the old one.  In some cases, the ES ingest pipeline required for the `-g` command line option 
-might change during an upgrade.  Therefore, it is strongly recommend you delete 
-your [ingest pipeline](#esingestpipeline) before you run a new version of zeek2es.py.
-
-### ES Ingest Pipeline <a name="esingestpipeline" />
-
-If you need to [delete the "zeekgeoip" ES ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/delete-pipeline-api.html) 
-used to geolocate IP addresses with the `-g` command line option, you can either do it graphically
-through Kibana's Stack Management->Ingest Pipelines or this command will do it for you:
-
-```
-curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
-```
-
-This command is strongly recommended whenever updating your copy of zeek2es.py.
 
 ### JSON Log Input <a name="jsonloginput" />
 
