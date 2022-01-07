@@ -5,6 +5,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 
 ## Table of Contents:
 - [Introduction](#introduction)
+- [Installation](#installation)
 - [Command Line](#commandline)
 - [Command Line Options](#commandlineoptions)
 - [Requirements](#requirements)
@@ -56,6 +57,11 @@ for aggregations in Kibana.
 Also, no other Python libraries are needed to run this application.  If Python
 is already on your system, there is nothing additional for you to copy over
 to your machine than [Elasticsearch, Kibana](https://www.elastic.co/start), and [zeek2es.py](zeek2es.py).
+
+## Installation: <a name="installation" />
+
+There is none.  You just copy [zeek2es.py](zeek2es.py) to your host and run it with Python.  If you are upgrading,
+please see [the notes section on upgrading zeek2es](#upgradingzeek2es).
 
 ## Command Line: <a name="commandline" />
 
