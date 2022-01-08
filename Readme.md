@@ -24,6 +24,10 @@ conn.log for a single uid:
 
 ![Kibana](images/multi-log-correlation.png)
 
+Or you could just simply use the uid (or fuid) you are looking for in all logs:
+
+![Kibana](images/multi-log-correlation-simple.png)
+
 You can perform subnet searching on Zeek's 'addr' type:
 
 ![Kibana Subnet Searching](images/kibana-subnet-search.png)
