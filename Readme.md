@@ -18,6 +18,12 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 
 ![Kibana](images/kibana.png)
 
+Want to see multiple Zeek logs for the same connection ID (uid)
+or file ID (fuid)?  Here are the hits from files.log, http.log, and
+conn.log for a single uid:
+
+![Kibana](images/multi-log-correlation.png)
+
 You can perform subnet searching on Zeek's 'addr' type:
 
 ![Kibana Subnet Searching](images/kibana-subnet-search.png)
