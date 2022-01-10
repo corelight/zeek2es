@@ -70,8 +70,14 @@ to your machine than [Elasticsearch, Kibana](https://www.elastic.co/start), and 
 
 ## Installation: <a name="installation" />
 
-There is none.  You just copy [zeek2es.py](zeek2es.py) to your host and run it with Python.  If you are upgrading,
-please see [the section on upgrading zeek2es](#upgradingzeek2es).
+There is none.  You just copy [zeek2es.py](zeek2es.py) to your host and run it with Python.  Once Zeek
+logs have been imported with automatic index name generation (meaning, you did not supply the `-i` option)
+you will find your indices named "zeek_`zeeklogname`_`date`", where `zeeklogname` is a log name like `conn`
+and the `date` is in `YYYY-MM-DD` format.  Set your Kibana index pattern to match `zeek*` in this case.  If
+you named your index with the `-i` option, you will need to create a Kibana index pattern that 
+matches your naming scheme.
+
+If you are upgrading zeek2es, please see [the section on upgrading zeek2es](#upgradingzeek2es).
 
 ## Upgrading zeek2es <a name="upgradingzeek2es" />
 
