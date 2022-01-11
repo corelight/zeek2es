@@ -201,7 +201,7 @@ if not args.jsonlogs:
             added_val = False
             for col in row:
                 if types[i] == "time":
-                    if col != '-' and col != '(empty)':
+                    if col != '-' and col != '(empty)' and col != '':
                         mydt = datetime.datetime.fromtimestamp(float(col))
                         localized_mydt = old_timezone.localize(mydt)
                         gmt_mydt = localized_mydt.astimezone(gmt_timezone)
@@ -214,23 +214,23 @@ if not args.jsonlogs:
                                 d[fields[i]] = gmt_mydt.timestamp()*1000
                         added_val = True
                 elif types[i] == "interval" or types[i] == "double":
-                    if col != '-' and col != '(empty)':
+                    if col != '-' and col != '(empty)' and col != '':
                         d[fields[i]] = float(col)
                         added_val = True
                 elif types[i] == "bool":
-                    if col != '-' and col != '(empty)':
+                    if col != '-' and col != '(empty)' and col != '':
                         d[fields[i]] = col == "T"
                         added_val = True
                 elif types[i] == "port" or types[i] == "count" or types[i] == "int":
-                    if col != '-' and col != '(empty)':
+                    if col != '-' and col != '(empty)' and col != '':
                         d[fields[i]] = int(col)
                         added_val = True
                 elif types[i].startswith("vector") or types[i].startswith("set"):
-                    if col != '-' and col != '(empty)':
+                    if col != '-' and col != '(empty)' and col != '':
                         d[fields[i]] = col.split(",")
                         added_val = True
                 else:
-                    if col != '-' and col != '(empty)':
+                    if col != '-' and col != '(empty)' and col != '':
                         d[fields[i]] = col
                         added_val = True
                 i += 1
