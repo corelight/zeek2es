@@ -173,7 +173,7 @@ optional arguments:
   -t, --timestamp       Keep the time in timestamp format.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
   -b, --nobulk          Remove the ES bulk JSON header. Requires --stdout.
-  -c, --cython          Use Cython execution by compiling and loading the local zeek2es.so file through an import. Run python setup.py build_ext --inplace first to make your zeek2es.so file!
+  -c, --cython          Use Cython execution by loading the local zeek2es.so file through an import. Run python setup.py build_ext --inplace first to make your zeek2es.so file!
   -z, --supresswarnings
                         Supress any type of warning. Die stoically and silently.
 ```
