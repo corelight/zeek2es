@@ -13,6 +13,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 - [Requirements](#requirements)
 - [Notes](#notes)
   - [JSON Log Input](#jsonloginput)
+  - [Cython](#cython)
 
 ## Introduction <a name="introduction" />
 
@@ -142,7 +143,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-k KEYWORDS] [-g] [-j] [-r] [-t] [-s] [-b] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -162,12 +163,17 @@ optional arguments:
                         The time zone of the Zeek logs. (default: GMT)
   -k KEYWORDS, --keywords KEYWORDS
                         A comma delimited list of text fields to add a keyword subfield. (default: service)
+  -a LAMBDAFILTER, --lambdafilter LAMBDAFILTER
+                        A lambda function, when eval'd will filter your output JSON dict. (default: empty string)
+  -f LAMBDAFILTERFILE, --lambdafilterfile LAMBDAFILTERFILE
+                        A lambda function file, when eval'd will filter your output JSON dict. (default: empty string)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services. Takes longer, but worth it.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
   -b, --nobulk          Remove the ES bulk JSON header. Requires --stdout.
+  -c, --cython          Use Cython execution by compiling and loading the local zeek2es.so file through an import. Run python setup.py build_ext --inplace first to make your zeek2es.so file!
   -z, --supresswarnings
                         Supress any type of warning. Die stoically and silently.
 ```
@@ -187,3 +193,8 @@ are not id$orig_h and id$resp_h, since the type information is not available to 
 ElasticSearch's "ip" type.  Since address fields will not be of type "ip", you will not be able to use 
 subnet searches, for example, like you could for the TSV logs.  Saving Zeek logs in ASCII TSV 
 format provides for greater long term flexibility.
+
+### Cython <a name="cython" />
+
+If you'd like to try [Cython](https://cython.org/), you must run `python setup.py build_ext --inplace` 
+first to generate your compiled file.  You must do this every time you update zeek2es!

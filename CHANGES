@@ -1,3 +1,4 @@
+v0.2.5  Added Cython and Python lambda filtering capabilties.
 v0.2.4  Added error checking for empty field.
 v0.2.3  Added keyword sub field capabilties with -k option.  
         Added more documentation to readme.
