@@ -20,7 +20,6 @@ def parseargs():
     parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The Elasticsearch URL. (default: http://localhost:9200/)')
     parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
     parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
-    parser.add_argument('-m', '--timezone', default="GMT", help='The time zone of the Zeek logs. (default: GMT)')
     parser.add_argument('-k', '--keywords', default="service", help='A comma delimited list of text fields to add a keyword subfield. (default: service)')
     parser.add_argument('-a', '--lambdafilter', default="", help='A lambda function, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-f', '--lambdafilterfile', default="", help='A lambda function file, when eval\'d will filter your output JSON dict. (default: empty string)')
@@ -37,9 +36,6 @@ def parseargs():
     return args
 
 def main(**args):
-    old_timezone = pytz.timezone(args['timezone'])
-    gmt_timezone = pytz.timezone("GMT")
-
     outputfields = []
     if (len(args['outputfields']) > 0):
         try:
@@ -225,9 +221,7 @@ def main(**args):
                 for col in row:
                     if types[i] == "time":
                         if col != '-' and col != '(empty)' and col != '' and (ofl == 0 or fields[i] in outputfields):
-                            mydt = datetime.datetime.fromtimestamp(float(col))
-                            localized_mydt = old_timezone.localize(mydt)
-                            gmt_mydt = localized_mydt.astimezone(gmt_timezone)
+                            gmt_mydt = datetime.datetime.utcfromtimestamp(float(col))
                             if not args['timestamp']:
                                 d[fields[i]] = "{}T{}".format(gmt_mydt.date(), gmt_mydt.time())
                             else:
@@ -337,9 +331,7 @@ def main(**args):
             j_data = json.loads(line)
 
             if "ts" in j_data:
-                mydt = datetime.datetime.fromtimestamp(float(j_data["ts"]))
-                localized_mydt = old_timezone.localize(mydt)
-                gmt_mydt = localized_mydt.astimezone(gmt_timezone)
+                gmt_mydt = datetime.datetime.utcfromtimestamp(float(j_data["ts"]))
 
                 if not args['timestamp']:
                     j_data["ts"] = "{}T{}".format(gmt_mydt.date(), gmt_mydt.time())

@@ -54,14 +54,6 @@ you have ElasticSearch set up on your localhost at the default port.
 If you do not have ElasticSearch you can output the JSON to stdout with the `-s -b` command line options
 to process with the [jq application](https://stedolan.github.io/jq).
 
-This program will output date and times in GMT time zone.  You can change the input with the `-m`
-command line option with any timezone listed by the following Python program:
-
-```
-import pytz
-print(pytz.all_timezones)
-```
-
 You can add a keyword subfield to text fields with the `-k` command line option.  This is useful
 for aggregations in Kibana.
 
@@ -143,7 +135,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -159,8 +151,6 @@ optional arguments:
   -l LINES, --lines LINES
                         Lines to buffer for RESTful operations. (default: 10,000)
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
-  -m TIMEZONE, --timezone TIMEZONE
-                        The time zone of the Zeek logs. (default: GMT)
   -k KEYWORDS, --keywords KEYWORDS
                         A comma delimited list of text fields to add a keyword subfield. (default: service)
   -a LAMBDAFILTER, --lambdafilter LAMBDAFILTER
