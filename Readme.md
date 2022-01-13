@@ -143,7 +143,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-m TIMEZONE] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -167,6 +167,8 @@ optional arguments:
                         A lambda function, when eval'd will filter your output JSON dict. (default: empty string)
   -f LAMBDAFILTERFILE, --lambdafilterfile LAMBDAFILTERFILE
                         A lambda function file, when eval'd will filter your output JSON dict. (default: empty string)
+  -y OUTPUTFIELDS, --outputfields OUTPUTFIELDS
+                        A comma delimited list of fields to keep for the output. Must include ts. (default: empty string)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services. Takes longer, but worth it.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.

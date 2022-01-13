@@ -24,6 +24,7 @@ def parseargs():
     parser.add_argument('-k', '--keywords', default="service", help='A comma delimited list of text fields to add a keyword subfield. (default: service)')
     parser.add_argument('-a', '--lambdafilter', default="", help='A lambda function, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-f', '--lambdafilterfile', default="", help='A lambda function file, when eval\'d will filter your output JSON dict. (default: empty string)')
+    parser.add_argument('-y', '--outputfields', default="", help='A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)')
     parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
     parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
     parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
@@ -38,6 +39,15 @@ def parseargs():
 def main(**args):
     old_timezone = pytz.timezone(args['timezone'])
     gmt_timezone = pytz.timezone("GMT")
+
+    outputfields = []
+    if (len(args['outputfields']) > 0):
+        try:
+            outputfields = args['outputfields'].split(",")
+        except Exception as e:
+            if not args['supresswarnings']:
+                print("Your output fields did not comma split correctly.  Please try again. Exception: {}".format(e))
+            exit(-8)
 
     keywords = []
     if (len(args['keywords']) > 0):
@@ -205,6 +215,7 @@ def main(**args):
             n = 0
             items = 0
             outstring = ""
+            ofl = len(outputfields)
             for row in read_tsv:
                 d = dict(zeek_log_filename=filename, zeek_log_path=zeek_log_path)
                 if (len(args['name']) > 0):
@@ -213,7 +224,7 @@ def main(**args):
                 added_val = False
                 for col in row:
                     if types[i] == "time":
-                        if col != '-' and col != '(empty)' and col != '':
+                        if col != '-' and col != '(empty)' and col != '' and (ofl == 0 or fields[i] in outputfields):
                             mydt = datetime.datetime.fromtimestamp(float(col))
                             localized_mydt = old_timezone.localize(mydt)
                             gmt_mydt = localized_mydt.astimezone(gmt_timezone)
@@ -226,23 +237,23 @@ def main(**args):
                                     d[fields[i]] = gmt_mydt.timestamp()*1000
                             added_val = True
                     elif types[i] == "interval" or types[i] == "double":
-                        if col != '-' and col != '(empty)' and col != '':
+                        if col != '-' and col != '(empty)' and col != '' and (ofl == 0 or fields[i] in outputfields):
                             d[fields[i]] = float(col)
                             added_val = True
                     elif types[i] == "bool":
-                        if col != '-' and col != '(empty)' and col != '':
+                        if col != '-' and col != '(empty)' and col != '' and (ofl == 0 or fields[i] in outputfields):
                             d[fields[i]] = col == "T"
                             added_val = True
                     elif types[i] == "port" or types[i] == "count" or types[i] == "int":
-                        if col != '-' and col != '(empty)' and col != '':
+                        if col != '-' and col != '(empty)' and col != '' and (ofl == 0 or fields[i] in outputfields):
                             d[fields[i]] = int(col)
                             added_val = True
                     elif types[i].startswith("vector") or types[i].startswith("set"):
-                        if col != '-' and col != '(empty)' and col != '':
+                        if col != '-' and col != '(empty)' and col != '' and (ofl == 0 or fields[i] in outputfields):
                             d[fields[i]] = col.split(",")
                             added_val = True
                     else:
-                        if col != '-' and col != '(empty)' and col != '':
+                        if col != '-' and col != '(empty)' and col != '' and (ofl == 0 or fields[i] in outputfields):
                             d[fields[i]] = col
                             added_val = True
                     i += 1
@@ -382,6 +393,12 @@ def main(**args):
                             i["index"]["pipeline"] = "zeekgeoip"
                         outstring += json.dumps(i)+"\n"
                     j_data["@timestamp"] = j_data["ts"]
+                    if len(outputfields) > 0:
+                        new_j_data = {}
+                        for o in outputfields:
+                            if o in j_data:
+                                new_j_data[o] = j_data[o]
+                        j_data = new_j_data
                     outstring += json.dumps(j_data) + "\n"
                     n += 1
 
