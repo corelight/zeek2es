@@ -204,17 +204,6 @@ def main(**args):
         if len(types) > 0 and len(fields) > 0:
             read_tsv = csv.reader(io.TextIOWrapper(grep_process.stdout), delimiter="\t", quoting=csv.QUOTE_NONE)
 
-            # Put index template for data stream
-
-            if args["datastream"] > 0:
-                lifecycle_policy = {"policy": {"phases": {"hot": {"actions": {"rollover": {"max_primary_shard_size": "{}GB".format(args['datastream'])}}}}}}
-                res = requests.put(args['esurl']+"_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
-                                    data=json.dumps(lifecycle_policy).encode('UTF-8'))
-                index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
-                                    "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}}}
-                res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
-                                    data=json.dumps(index_template).encode('UTF-8'))
-
             # Put mappings
 
             mappings = {"mappings": {"properties": dict(geoip_orig=dict(properties=dict(location=dict(type="geo_point"))), geoip_resp=dict(properties=dict(location=dict(type="geo_point"))))}}
@@ -230,6 +219,17 @@ def main(**args):
                         mappings["mappings"]["properties"][fields[i]] = {"type": "text", "fields": { "keyword": { "type": "keyword" }}}
                     else:
                         mappings["mappings"]["properties"][fields[i]] = {"type": "text"}
+
+            # Put index template for data stream
+
+            if args["datastream"] > 0:
+                lifecycle_policy = {"policy": {"phases": {"hot": {"actions": {"rollover": {"max_primary_shard_size": "{}GB".format(args['datastream'])}}}}}}
+                res = requests.put(args['esurl']+"_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
+                                    data=json.dumps(lifecycle_policy).encode('UTF-8'))
+                index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
+                                    "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}, "mappings": mappings["mappings"]}}
+                res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
+                                    data=json.dumps(index_template).encode('UTF-8'))
 
             # Put data
 
@@ -329,6 +329,7 @@ def main(**args):
                 else:
                     print(outstring)
     else:
+        # This does everything the TSV version does, but for JSON
         # Read JSON log
         zcat_process = subprocess.Popen(zcat_name+[filename], 
                                         stdout=subprocess.PIPE)
@@ -390,15 +391,6 @@ def main(**args):
                     es_index = es_index.replace(':', '_').replace("/", "_")
 
                 if not args['stdout']:
-                    if args["datastream"] > 0 and putdatastream == False:
-                        lifecycle_policy = {"policy": {"phases": {"hot": {"actions": {"rollover": {"max_primary_shard_size": "{}GB".format(args['datastream'])}}}}}}
-                        res = requests.put(args['esurl']+"_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
-                                            data=json.dumps(lifecycle_policy).encode('UTF-8'))
-                        index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
-                                            "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}}}
-                        res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
-                                            data=json.dumps(index_template).encode('UTF-8'))
-
                     if putmapping == False:
                         res = requests.put(args['esurl']+es_index, headers={'Content-Type': 'application/json'},
                                             data=json.dumps(mappings).encode('UTF-8'))
@@ -407,6 +399,14 @@ def main(**args):
                         res = requests.put(args['esurl']+"_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
                                             data=json.dumps(ingest_pipeline).encode('UTF-8'))
                         putpipeline = True
+                    if args["datastream"] > 0 and putdatastream == False:
+                        lifecycle_policy = {"policy": {"phases": {"hot": {"actions": {"rollover": {"max_primary_shard_size": "{}GB".format(args['datastream'])}}}}}}
+                        res = requests.put(args['esurl']+"_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
+                                            data=json.dumps(lifecycle_policy).encode('UTF-8'))
+                        index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
+                                            "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}, "mappings": mappings["mappings"]}}
+                        res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
+                                            data=json.dumps(index_template).encode('UTF-8'))
 
                 if (len(args['name']) > 0):
                     j_data["zeek_log_system_name"] = args['name']
