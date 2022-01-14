@@ -170,7 +170,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-g] [-d] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -194,8 +194,9 @@ optional arguments:
                         A lambda function file, when eval'd will filter your output JSON dict. (default: empty string)
   -y OUTPUTFIELDS, --outputfields OUTPUTFIELDS
                         A comma delimited list of fields to keep for the output. Must include ts. (default: empty string)
+  -d DATASTREAM, --datastream DATASTREAM
+                        Instead of an index, use a data stream that will rollover at this many GB. Recommended is 50. (default: 0 - disabled)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services. Takes longer, but worth it.
-  -d, --datastream      Instead of an index, use a data stream.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
@@ -225,12 +226,14 @@ format provides for greater long term flexibility.
 ### Data Streams <a name="datastreams" />
 
 You can use data streams instead of indices for large logs with the `-d` command line option.  This
-option creates index templates beginning with `zeek_`.  If you'd like to delete all of your data streams
+option creates index templates beginning with `zeek_`.  It also creates a lifecycle policy
+named `zeek-lifecycle-policy`.  If you would like to delete all of your data streams, lifecycle policies,
 and index templates, these commands will do it for you:
 
 ```
 curl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty
 curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
+curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
 
 ### Cython <a name="cython" />

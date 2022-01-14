@@ -1,3 +1,4 @@
+v0.2.8  Added lifecycle policy for shard size rollover.
 v0.2.7  Added data stream capability.
 v0.2.6  Added capability to output only certain fields.
 v0.2.5  Added Cython and Python lambda filtering capabilties.
