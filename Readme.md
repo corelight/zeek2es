@@ -170,12 +170,12 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
 positional arguments:
-  filename              The Zeek log in *.log or *.gz format. Include the full path.
+  filename              The Zeek log in *.log or *.gz format.  Include the full path.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -193,18 +193,37 @@ optional arguments:
   -f LAMBDAFILTERFILE, --lambdafilterfile LAMBDAFILTERFILE
                         A lambda function file, when eval'd will filter your output JSON dict. (default: empty string)
   -y OUTPUTFIELDS, --outputfields OUTPUTFIELDS
-                        A comma delimited list of fields to keep for the output. Must include ts. (default: empty string)
+                        A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)
   -d DATASTREAM, --datastream DATASTREAM
-                        Instead of an index, use a data stream that will rollover at this many GB. Recommended is 50. (default: 0 - disabled)
-  -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services. Takes longer, but worth it.
+                        Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.
+                        You must delete your old ILM if you change this number between runs!  (default: 0 - disabled)
+  -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
-  -b, --nobulk          Remove the ES bulk JSON header. Requires --stdout.
-  -c, --cython          Use Cython execution by loading the local zeek2es.so file through an import. Run python setup.py build_ext --inplace first to make your zeek2es.so file!
+  -b, --nobulk          Remove the ES bulk JSON header.  Requires --stdout.
+  -c, --cython          Use Cython execution by loading the local zeek2es.so file through an import.
+                        Run python setup.py build_ext --inplace first to make your zeek2es.so file!
+  -w, --hashdates       Use hashes instead of dates for the index name.
   -z, --supresswarnings
-                        Supress any type of warning. Die stoically and silently.
+                        Supress any type of warning.  Die stoically and silently.
+
+To delete indices:
+
+	curl -X DELETE http://localhost:9200/zeek*?pretty
+
+To delete data streams:
+
+	curl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty
+
+To delete index templates:
+
+	curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
+
+To delete the lifecycle policy:
+
+	curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
 
 ## Requirements: <a name="requirements" />
@@ -235,6 +254,10 @@ curl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty
 curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
 curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
+
+It is important to note that the rollover value for the shard size is set inside `zeek-lifecycle-policy` 
+the first time data streams are used.  If you need to change this number after you have used it once, 
+you must delete the old `zeek-lifecycle-policy` and let zeek2es recreate it with your new `-d` value.  
 
 ### Cython <a name="cython" />
 

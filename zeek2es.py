@@ -7,12 +7,25 @@ import requests
 import datetime
 import re
 import argparse
+import random
 # Making these available for lambda filter input.
 import ipaddress
 import os
 
+# The number of bits to use in a random hash
+hashbits = 128
+
+class MyParser(argparse.ArgumentParser):
+    def print_help(self):
+        super().print_help()
+        print("")
+        print("To delete indices:\n\n\tcurl -X DELETE http://localhost:9200/zeek*?pretty\n")
+        print("To delete data streams:\n\n\tcurl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty\n")
+        print("To delete index templates:\n\n\tcurl -X DELETE http://localhost:9200/_index_template/zeek*?pretty\n")
+        print("To delete the lifecycle policy:\n\n\tcurl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty\n")
+
 def parseargs():
-    parser = argparse.ArgumentParser(description='Process Zeek ASCII logs into Elasticsearch.')
+    parser = MyParser(description='Process Zeek ASCII logs into Elasticsearch.', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('filename', 
                         help='The Zeek log in *.log or *.gz format.  Include the full path.')
     parser.add_argument('-i', '--esindex', help='The Elasticsearch index name.')
@@ -23,14 +36,15 @@ def parseargs():
     parser.add_argument('-a', '--lambdafilter', default="", help='A lambda function, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-f', '--lambdafilterfile', default="", help='A lambda function file, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-y', '--outputfields', default="", help='A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)')
-    parser.add_argument('-d', '--datastream', default=0, type=int, help='Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50.  (default: 0 - disabled)')
+    parser.add_argument('-d', '--datastream', default=0, type=int, help='Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.\nYou must delete your old ILM if you change this number between runs!  (default: 0 - disabled)')
     parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
     parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
     parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
     parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
     parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
     parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
-    parser.add_argument('-c', '--cython', action="store_true", help='Use Cython execution by loading the local zeek2es.so file through an import.  Run python setup.py build_ext --inplace first to make your zeek2es.so file!')
+    parser.add_argument('-c', '--cython', action="store_true", help='Use Cython execution by loading the local zeek2es.so file through an import.\nRun python setup.py build_ext --inplace first to make your zeek2es.so file!')
+    parser.add_argument('-w', '--hashdates', action="store_true", help='Use hashes instead of dates for the index name.')
     parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die stoically and silently.')
     args = parser.parse_args()
     return args
@@ -138,8 +152,10 @@ def main(**args):
             sysname = ""
             if (len(args['name']) > 0):
                 sysname = "{}_".format(args['name'])
-
-            es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, log_date.date())
+            if not args['hashdates']:
+                es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, log_date.date())
+            else:
+                es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, random.getrandbits(hashbits))
         else:
             es_index = args['esindex']
 
@@ -366,7 +382,11 @@ def main(**args):
                         print("Log path cannot be found from filename: {}".format(filename))
                         exit(-5)
 
-                    es_index = "zeek_{}{}_{}".format(sysname, zeek_log_path, gmt_mydt.date())
+                    if not args['hashdates']:
+                        es_index = "zeek_{}{}_{}".format(sysname, zeek_log_path, gmt_mydt.date())
+                    else:
+                        es_index = "zeek_{}{}_{}".format(sysname, zeek_log_path, random.getrandbits(hashbits))
+
                     es_index = es_index.replace(':', '_').replace("/", "_")
 
                 if not args['stdout']:
