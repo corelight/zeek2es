@@ -1,30 +1,31 @@
-v0.2.9  Added hashdates option to use random hashes instead of dates in indices.
-v0.2.8  Added lifecycle policy for shard size rollover.
-v0.2.7  Added data stream capability.
-v0.2.6  Added capability to output only certain fields.
-v0.2.5  Added Cython and Python lambda filtering capabilties.
-v0.2.4  Added error checking for empty field.
-v0.2.3  Added keyword sub field capabilties with -k option.  
-        Added more documentation to readme.
-v0.2.2  Added a split ingest pipeline on the "service" field.
-v0.2.1  Added ES pipeline capability, which allows for Geolocation on IP addresses.
-v0.2.0  Removed some index checking, made indices on log type and day to 
-        reduce the number of open indices.  Remove state documents.
-        Other odds and ends.  Added @timestamp for ease.
-v0.1.16 Added JSON input support with -j.
-v0.1.15 Fix a bug with timezone translation.
-v0.1.14 Add timezone support.
-v0.1.13 Tune down the -l parameter.
-v0.1.12 Added origtime commnd line option.
-v0.1.11 Improvements to processing speed.
-v0.1.10 Add option to keep original times.
-v0.1.9  Remove stderr output from zeek-cut.
-v0.1.8  Added system name to log, if available.
-v0.1.7  Improved index name generation.
-v0.1.6  Get date from log rather than path.
-v0.1.5  Added more debug output.
-v0.1.4  Added some error checking.
-v0.1.3  Added number of items processed to state document.
-v0.1.2  Added state information and --checkstate command line option.
-v0.1.1  Added file name to JSON documents.
-v0.1.0  Initial release.
+v0.2.10         Fixed help screen output.
+v0.2.9          Added hashdates option to use random hashes instead of dates in indices.
+v0.2.8          Added lifecycle policy for shard size rollover.
+v0.2.7          Added data stream capability.
+v0.2.6          Added capability to output only certain fields.
+v0.2.5          Added Cython and Python lambda filtering capabilties.
+v0.2.4          Added error checking for empty field.
+v0.2.3          Added keyword sub field capabilties with -k option.  
+                Added more documentation to readme.
+v0.2.2          Added a split ingest pipeline on the "service" field.
+v0.2.1          Added ES pipeline capability, which allows for Geolocation on IP addresses.
+v0.2.0          Removed some index checking, made indices on log type and day to 
+                reduce the number of open indices.  Remove state documents.
+                Other odds and ends.  Added @timestamp for ease.
+v0.1.16         Added JSON input support with -j.
+v0.1.15         Fix a bug with timezone translation.
+v0.1.14         Add timezone support.
+v0.1.13         Tune down the -l parameter.
+v0.1.12         Added origtime commnd line option.
+v0.1.11         Improvements to processing speed.
+v0.1.10         Add option to keep original times.
+v0.1.9          Remove stderr output from zeek-cut.
+v0.1.8          Added system name to log, if available.
+v0.1.7          Improved index name generation.
+v0.1.6          Get date from log rather than path.
+v0.1.5          Added more debug output.
+v0.1.4          Added some error checking.
+v0.1.3          Added number of items processed to state document.
+v0.1.2          Added state information and --checkstate command line option.
+v0.1.1          Added file name to JSON documents.
+v0.1.0          Initial release.

@@ -195,8 +195,7 @@ optional arguments:
   -y OUTPUTFIELDS, --outputfields OUTPUTFIELDS
                         A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)
   -d DATASTREAM, --datastream DATASTREAM
-                        Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.
-                        You must delete your old ILM if you change this number between runs!  (default: 0 - disabled)
+                        Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.  (default: 0 - disabled)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
@@ -254,10 +253,6 @@ curl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty
 curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
 curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
-
-It is important to note that the rollover value for the shard size is set inside `zeek-lifecycle-policy` 
-the first time data streams are used.  If you need to change this number after you have used it once, 
-you must delete the old `zeek-lifecycle-policy` and let zeek2es recreate it with your new `-d` value.  
 
 ### Cython <a name="cython" />
 

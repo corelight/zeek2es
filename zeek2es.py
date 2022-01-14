@@ -36,7 +36,7 @@ def parseargs():
     parser.add_argument('-a', '--lambdafilter', default="", help='A lambda function, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-f', '--lambdafilterfile', default="", help='A lambda function file, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-y', '--outputfields', default="", help='A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)')
-    parser.add_argument('-d', '--datastream', default=0, type=int, help='Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.\nYou must delete your old ILM if you change this number between runs!  (default: 0 - disabled)')
+    parser.add_argument('-d', '--datastream', default=0, type=int, help='Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.  (default: 0 - disabled)')
     parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
     parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
     parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
