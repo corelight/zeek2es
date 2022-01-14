@@ -407,6 +407,7 @@ def main(**args):
                                             "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}, "mappings": mappings["mappings"]}}
                         res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
                                             data=json.dumps(index_template).encode('UTF-8'))
+                        putdatastream = True
 
                 if (len(args['name']) > 0):
                     j_data["zeek_log_system_name"] = args['name']
