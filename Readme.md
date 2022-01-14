@@ -131,6 +131,13 @@ This script can be run in parallel on all connection logs, 10 at a time, with th
 find /some/dir -name “conn*.log.gz” | parallel -j 10 python zeek2es.py {1} :::: -
 ```
 
+If you would like to automatically import all conn.log files as they are created in a directory, the following
+[fswatch](https://emcrisostomo.github.io/fswatch/) command will do that for you:
+
+```
+fswatch -m poll_monitor --event Created -r /data/logs/zeek/ | awk '/^.*\/conn.*\.log\.gz$/' | parallel -j 5 python ~/zeek2es.py {} -g -d :::: -
+```
+
 If you have the jq command installed you can perform searches across all your logs for a common
 field like connection uid, even without ElasticSearch:
 
