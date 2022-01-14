@@ -8,11 +8,13 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 - [Installation](#installation)
 - [Upgrading zeek2es](#upgradingzeek2es)
   - [ES Ingest Pipeline](#esingestpipeline)
+- [Filtering Data](#filteringdata)
 - [Command Line](#commandline)
 - [Command Line Options](#commandlineoptions)
 - [Requirements](#requirements)
 - [Notes](#notes)
   - [JSON Log Input](#jsonloginput)
+  - [Data Streams](#datastreams)
   - [Cython](#cython)
 
 ## Introduction <a name="introduction" />
@@ -91,6 +93,32 @@ curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
 
 This command is strongly recommended whenever updating your copy of zeek2es.py.
 
+## Filtering Data: <a name="filteringdata" />
+
+zeek2es provides filtering capabilities for your Zeek logs before they are stored in ElasticSearch.  This
+functionality can be enabled with the `-a` or `-f` options.  The filters are constructed from Python
+lambda functions, where the input is a Python dictionary representing the output.  You can add a 
+filter to only store connection logs where the `service` field is populated using the `-f` option with
+this lambda filter file:
+
+```
+lambda x: 'service' in x and len(x['service']) > 0
+```
+
+Or maybe you'd like to filter for connections that have at least 1,024 bytes, with at least 1 byte coming from 
+the destination:
+
+```
+lambda x: 'orig_ip_bytes' in x and 'resp_ip_bytes' in x and x['orig_ip_bytes'] + x['resp_ip_bytes'] > 1024 and x['resp_ip_bytes'] > 0
+```
+
+Simpler lambda filters can be provided on the command line via the `-a` option.  This filter will only store 
+connection log entries where the originator IP address is part of the `192.0.0.0/8` network:
+
+```
+python zeek2es.py conn.log.gz -a "lambda x: 'id.orig_h' in x and ipaddress.ip_address(x['id.orig_h']) in ipaddress.ip_network('192.0.0.0/8')"
+```
+
 ## Command Line: <a name="commandline" />
 
 ```
@@ -135,7 +163,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-g] [-d] [-j] [-r] [-t] [-s] [-b] [-c] [-z] filename
 
 Process Zeek ASCII logs into Elasticsearch.
 
@@ -160,6 +188,7 @@ optional arguments:
   -y OUTPUTFIELDS, --outputfields OUTPUTFIELDS
                         A comma delimited list of fields to keep for the output. Must include ts. (default: empty string)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services. Takes longer, but worth it.
+  -d, --datastream      Instead of an index, use a data stream.
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
@@ -185,6 +214,17 @@ are not id$orig_h and id$resp_h, since the type information is not available to 
 ElasticSearch's "ip" type.  Since address fields will not be of type "ip", you will not be able to use 
 subnet searches, for example, like you could for the TSV logs.  Saving Zeek logs in ASCII TSV 
 format provides for greater long term flexibility.
+
+### Data Streams <a name="datastreams" />
+
+You can use data streams instead of indices for large logs with the `-d` command line option.  This
+option creates index templates beginning with `zeek_`.  If you'd like to delete all of your data streams
+and index templates, these commands will do it for you:
+
+```
+curl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty
+curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
+```
 
 ### Cython <a name="cython" />
 

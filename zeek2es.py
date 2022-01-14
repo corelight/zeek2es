@@ -5,7 +5,6 @@ import csv
 import io
 import requests
 import datetime
-import pytz
 import re
 import argparse
 # Making these available for lambda filter input.
@@ -25,6 +24,7 @@ def parseargs():
     parser.add_argument('-f', '--lambdafilterfile', default="", help='A lambda function file, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-y', '--outputfields', default="", help='A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)')
     parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
+    parser.add_argument('-d', '--datastream', action="store_true", help='Instead of an index, use a data stream.')
     parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
     parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
     parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
@@ -188,6 +188,13 @@ def main(**args):
         if len(types) > 0 and len(fields) > 0:
             read_tsv = csv.reader(io.TextIOWrapper(grep_process.stdout), delimiter="\t", quoting=csv.QUOTE_NONE)
 
+            # Put index template for data stream
+
+            if args["datastream"]:
+                index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500}
+                res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
+                                    data=json.dumps(index_template).encode('UTF-8'))
+
             # Put mappings
 
             mappings = {"mappings": {"properties": dict(geoip_orig=dict(properties=dict(location=dict(type="geo_point"))), geoip_resp=dict(properties=dict(location=dict(type="geo_point"))))}}
@@ -261,9 +268,9 @@ def main(**args):
 
                     if not filter_data:
                         if not args['nobulk']:
-                            i = dict(index=dict(_index=es_index))
+                            i = dict(create=dict(_index=es_index))
                             if len(ingest_pipeline["processors"]) > 0:
-                                i["index"]["pipeline"] = "zeekgeoip"
+                                i["create"]["pipeline"] = "zeekgeoip"
                             outstring += json.dumps(i)+"\n"
                         d["@timestamp"] = d["ts"]
                         outstring += json.dumps(d)+"\n"
@@ -321,6 +328,7 @@ def main(**args):
         mappings["mappings"]["properties"]["id.resp_h"] = {"type": "ip"}
         putmapping = False
         putpipeline = False
+        putdatastream = False
 
         while True:
             line = j_in.readline()
@@ -358,6 +366,11 @@ def main(**args):
                     es_index = es_index.replace(':', '_').replace("/", "_")
 
                 if not args['stdout']:
+                    if args["datastream"] and putdatastream == False:
+                        index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500}
+                        res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
+                                            data=json.dumps(index_template).encode('UTF-8'))
+
                     if putmapping == False:
                         res = requests.put(args['esurl']+es_index, headers={'Content-Type': 'application/json'},
                                             data=json.dumps(mappings).encode('UTF-8'))
@@ -380,9 +393,9 @@ def main(**args):
                     items += 1
 
                     if not args['nobulk']:
-                        i = dict(index=dict(_index=es_index))
+                        i = dict(create=dict(_index=es_index))
                         if len(ingest_pipeline["processors"]) > 0:
-                            i["index"]["pipeline"] = "zeekgeoip"
+                            i["create"]["pipeline"] = "zeekgeoip"
                         outstring += json.dumps(i)+"\n"
                     j_data["@timestamp"] = j_data["ts"]
                     if len(outputfields) > 0:
