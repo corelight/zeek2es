@@ -9,7 +9,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 - [Upgrading zeek2es](#upgradingzeek2es)
   - [ES Ingest Pipeline](#esingestpipeline)
 - [Filtering Data](#filteringdata)
-- [Command Line](#commandline)
+- [Command Line Examples](#commandlineexamples)
 - [Command Line Options](#commandlineoptions)
 - [Requirements](#requirements)
 - [Notes](#notes)
@@ -119,7 +119,7 @@ connection log entries where the originator IP address is part of the `192.0.0.0
 python zeek2es.py conn.log.gz -a "lambda x: 'id.orig_h' in x and ipaddress.ip_address(x['id.orig_h']) in ipaddress.ip_network('192.0.0.0/8')"
 ```
 
-## Command Line: <a name="commandline" />
+## Command Line Examples: <a name="commandlineexamples" />
 
 ```
 python zeek2es.py your_zeek_log.gz -i your_es_index_name
