@@ -180,7 +180,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -i ESINDEX, --esindex ESINDEX
-                        The Elasticsearch index name.
+                        The Elasticsearch index/data stream name.
   -u ESURL, --esurl ESURL
                         The Elasticsearch URL. (default: http://localhost:9200/)
   -l LINES, --lines LINES

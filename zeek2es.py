@@ -28,7 +28,7 @@ def parseargs():
     parser = MyParser(description='Process Zeek ASCII logs into Elasticsearch.', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('filename', 
                         help='The Zeek log in *.log or *.gz format.  Include the full path.')
-    parser.add_argument('-i', '--esindex', help='The Elasticsearch index name.')
+    parser.add_argument('-i', '--esindex', help='The Elasticsearch index/data stream name.')
     parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The Elasticsearch URL. (default: http://localhost:9200/)')
     parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
     parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
