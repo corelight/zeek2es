@@ -1,3 +1,4 @@
+v0.2.12         Added a supporting shell script for data streams.
 v0.2.11         Fixed a mapping issue with data streams.
 v0.2.10         Fixed help screen output.
 v0.2.9          Added hashdates option to use random hashes instead of dates in indices.
