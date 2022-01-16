@@ -12,26 +12,18 @@ pythoncmd="python3"
 zeek2esargs="-g -l $num_of_lines -d $rollover_gb"
 
 # Error checking
-if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 DIRECTORY NJOBS \"LIST_OF_LOGS_DELIMITED_BY_SPACES\"" >&2
+if [ "$#" -lt 3 ]; then
+  echo "Usage: $0 NJOBS \"LIST_OF_LOGS_DELIMITED_BY_SPACES\" DIR1 DIR2 ..." >&2
   echo >&2
   echo "Example:" >&2
-  echo "  time ./process_logs_as_datastream.sh /usr/local/var/logs 16 \"bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn\"" >&2
-  exit 1
-fi
-if ! [ -e "$1" ]; then
-  echo "$1 not found" >&2
-  exit 1
-fi
-if ! [ -d "$1" ]; then
-  echo "$1 not a directory" >&2
+  echo "  time ./process_logs_as_datastream.sh 16 \"bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn\" /usr/local/var/logs" >&2
   exit 1
 fi
 
 # Things set from the command line
-logdir=$1
-njobs=$2
-logs=$3
+njobs=$1
+logs=$2
+logdirs=${@:3}
 
 # Iterate through the *.log.gz files in the supplied directory
 for val in $logs; do
@@ -43,9 +35,9 @@ for val in $logs; do
 
     if [ -f $lambdafilterfile ]; then
       echo "  Using filter file "$lambdafilterfile
-      find $logdir | awk $filename_re | parallel -j $njobs $pythoncmd $zeek2es_path {} $zeek2esargsplus -f $lambdafilterfile :::: -
+      find $logdirs | awk $filename_re | parallel -j $njobs $pythoncmd $zeek2es_path {} $zeek2esargsplus -f $lambdafilterfile :::: -
     else
       echo "  No lambda filter file found for "$lambdafilterfile
-      find $logdir | awk $filename_re | parallel -j $njobs $pythoncmd $zeek2es_path {} $zeek2esargsplus :::: -
+      find $logdirs | awk $filename_re | parallel -j $njobs $pythoncmd $zeek2es_path {} $zeek2esargsplus :::: -
     fi
 done
