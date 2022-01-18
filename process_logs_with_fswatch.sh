@@ -2,10 +2,9 @@
 
 # Things you can set:
 zeek2es_path=~/Source/zeek2es/zeek2es.py
-#zeek2es_path="${zeek2es_path/#\~/$HOME}"
 lambda_filter_file_dir=~/
 num_of_lines=50000
-logfiledelim=.
+logfiledelim=\.
 stream_prepend="logs-zeek-"
 stream_ending=""
 pythoncmd="python3"
