@@ -282,6 +282,18 @@ Example:
 
 You will need to edit these scripts and command lines according to your environment.
 
+The following lines should delete all Zeek data in ElasticSearch no matter if you use indices or 
+data streams, or these helper scripts:
+
+```
+curl -X DELETE http://localhost:9200/zeek*?pretty
+curl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty
+curl -X DELETE http://localhost:9200/_data_stream/logs-zeek*?pretty
+curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
+curl -X DELETE http://localhost:9200/_index_template/logs-zeek*?pretty
+curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
+```
+
 ### Cython <a name="cython" />
 
 If you'd like to try [Cython](https://cython.org/), you must run `python setup.py build_ext --inplace` 
