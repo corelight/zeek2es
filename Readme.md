@@ -260,8 +260,8 @@ curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 There are two scripts that will help you make your logs into data streams such as `logs-zeek-conn`.
 The first script is [process_logs_as_datastream.sh](process_logs_as_datastream.sh) and given 
 a list of logs and directories, will import them as such.  The second script 
-is [process_logs_with_fswatch.sh](process_logs_with_fswatch.sh), and it is used to import logs 
-as they are being created in a directory.  Both scripts have example command lines if you run them
+is [process_log.sh](process_log.sh), and it can be used to import logs 
+as they are created in a directory.  Both scripts have example command lines if you run them
 without any parameters.  
 
 ```
@@ -273,11 +273,11 @@ Example:
 ```
 
 ```
-$ ./process_logs_with_fswatch.sh 
-Usage: ./process_logs_with_fswatch.sh LOGFILENAME
+$ ./process_log.sh 
+Usage: ./process_log.sh LOGFILENAME
 
 Example:
-  fswatch -m poll_monitor --event Created -r /data/logs/zeek |  awk '/^.*\/(conn|dns|http)\..*\.log\.gz$/' | parallel -j 16 ./process_logs_with_fswatch.sh {} :::: -
+  fswatch -m poll_monitor --event Created -r /data/logs/zeek |  awk '/^.*\/(conn|dns|http)\..*\.log\.gz$/' | parallel -j 16 ./process_log.sh {} :::: -
 ```
 
 You will need to edit these scripts and command lines according to your environment.

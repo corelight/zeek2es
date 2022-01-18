@@ -1,3 +1,4 @@
+v0.2.17         Fixed various things in the help scripts.  Refactor.
 v0.2.16         Fixed a typo in a helper script.
 v0.2.15         Refactor helper script.
 v0.2.14         Added a fswatch helper script.
