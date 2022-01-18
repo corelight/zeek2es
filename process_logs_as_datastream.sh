@@ -4,19 +4,18 @@
 zeek2es_path="~/Source/zeek2es/zeek2es.py"
 lognamedelim="\."
 lambda_filter_file_dir=~/
-num_of_lines=100000
-rollover_gb=50
+num_of_lines=50000
 stream_prepend="logs-zeek-"
 stream_ending=""
 pythoncmd="python3"
-zeek2esargs="-g -l $num_of_lines -d $rollover_gb"
+zeek2esargs="-g -l $num_of_lines"
 
 # Error checking
 if [ "$#" -lt 3 ]; then
   echo "Usage: $0 NJOBS \"LIST_OF_LOGS_DELIMITED_BY_SPACES\" DIR1 DIR2 ..." >&2
   echo >&2
   echo "Example:" >&2
-  echo "  time ./process_logs_as_datastream.sh 16 \"bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn\" /usr/local/var/logs" >&2
+  echo "  time $0 16 \"bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn\" /usr/local/var/logs" >&2
   exit 1
 fi
 

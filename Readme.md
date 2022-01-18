@@ -15,6 +15,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 - [Notes](#notes)
   - [JSON Log Input](#jsonloginput)
   - [Data Streams](#datastreams)
+  - [Helper Scripts](#helperscripts)
   - [Cython](#cython)
 
 ## Introduction <a name="introduction" />
@@ -253,6 +254,33 @@ curl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty
 curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
 curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
+
+### Helper Scripts <a name="helperscripts" />
+
+There are two scripts that will help you make your logs into data streams such as `logs-zeek-conn`.
+The first script is [process_logs_as_datastream.sh](process_logs_as_datastream.sh) and given 
+a list of logs and directories, will import them as such.  The second script 
+is [process_logs_with_fswatch.sh](process_logs_with_fswatch.sh), and it is used to import logs 
+as they are being created in a directory.  Both scripts have example command lines if you run them
+without any parameters.  
+
+```
+$ ./process_logs_as_datastream.sh 
+Usage: ./process_logs_as_datastream.sh NJOBS "LIST_OF_LOGS_DELIMITED_BY_SPACES" DIR1 DIR2 ...
+
+Example:
+  time ./process_logs_as_datastream.sh 16 "bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn" /usr/local/var/logs
+```
+
+```
+$ ./process_logs_with_fswatch.sh 
+Usage: ./process_logs_with_fswatch.sh LOGFILENAME
+
+Example:
+  fswatch -m poll_monitor --event Created -r /data/logs/zeek |  awk '/^.*\/(conn|dns|http)\..*\.log\.gz$/' | parallel -j 16 ./process_logs_with_fswatch.sh {} :::: -
+```
+
+You will need to edit these scripts and command lines according to your environment.
 
 ### Cython <a name="cython" />
 
