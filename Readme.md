@@ -261,8 +261,8 @@ There are two scripts that will help you make your logs into data streams such a
 The first script is [process_logs_as_datastream.sh](process_logs_as_datastream.sh) and given 
 a list of logs and directories, will import them as such.  The second script 
 is [process_log.sh](process_log.sh), and it can be used to import logs 
-as they are created in a directory.  Both scripts have example command lines if you run them
-without any parameters.  
+one at a time.  This script can also be used to monitor logs created in a directory with `fswatch`.  
+Both scripts have example command lines if you run them without any parameters.  
 
 ```
 $ ./process_logs_as_datastream.sh 
@@ -280,7 +280,11 @@ Example:
   fswatch -m poll_monitor --event Created -r /data/logs/zeek |  awk '/^.*\/(conn|dns|http)\..*\.log\.gz$/' | parallel -j 16 ./process_log.sh {} :::: -
 ```
 
-You will need to edit these scripts and command lines according to your environment.
+You will need to edit these scripts and command lines according to your environment.  
+
+Any files having a name of a log such as `conn_filter.txt` in the `lambda_filter_file_dir`, by default your home directory, will be applied as a lambda
+filter file to the corresponding log input.  This allows you to set up all of your filters in one directory and import multiple log files with
+that set of filters in one command with [process_logs_as_datastream.sh](process_logs_as_datastream.sh).
 
 The following lines should delete all Zeek data in ElasticSearch no matter if you use indices or 
 data streams, or these helper scripts:
