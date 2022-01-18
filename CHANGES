@@ -1,3 +1,4 @@
+v0.2.15         Refactor helper script.
 v0.2.14         Added a fswatch helper script.
 v0.2.13         Refactored the helper script.
 v0.2.12         Added a supporting shell script for data streams.
