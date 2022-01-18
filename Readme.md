@@ -261,8 +261,9 @@ There are two scripts that will help you make your logs into data streams such a
 The first script is [process_logs_as_datastream.sh](process_logs_as_datastream.sh) and given 
 a list of logs and directories, will import them as such.  The second script 
 is [process_log.sh](process_log.sh), and it can be used to import logs 
-one at a time.  This script can also be used to monitor logs created in a directory with `fswatch`.  
-Both scripts have example command lines if you run them without any parameters.  
+one at a time.  This script can also be used to monitor logs created in a directory with 
+[fswatch](https://emcrisostomo.github.io/fswatch/).  Both scripts have example command lines 
+if you run them without any parameters.  
 
 ```
 $ ./process_logs_as_datastream.sh 
