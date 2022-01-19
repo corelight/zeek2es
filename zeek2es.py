@@ -25,7 +25,7 @@ class MyParser(argparse.ArgumentParser):
         print("To delete the lifecycle policy:\n\n\tcurl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty\n")
 
 def parseargs():
-    parser = MyParser(description='Process Zeek ASCII logs into Elasticsearch.', formatter_class=argparse.RawTextHelpFormatter)
+    parser = MyParser(description='Process Zeek ASCII logs into ElasticSearch.', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('filename', 
                         help='The Zeek log in *.log or *.gz format.  Include the full path.')
     parser.add_argument('-i', '--esindex', help='The Elasticsearch index/data stream name.')
@@ -38,6 +38,7 @@ def parseargs():
     parser.add_argument('-y', '--outputfields', default="", help='A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)')
     parser.add_argument('-d', '--datastream', default=0, type=int, help='Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.  (default: 0 - disabled)')
     parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
+    parser.add_argument('-p', '--splitfield', default="", help='A comma delimited list of additional fields to split with the ingestion pipeline, if enabled.  (default: empty string - disabled)')
     parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
     parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
     parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
@@ -107,8 +108,13 @@ def main(**args):
     ingest_pipeline = {"description": "Zeek Log Ingestion Pipeline.", "processors": [ ]}
 
     if args['ingestion']:
+        fields_to_split = []
+        if len(args['splitfield']) > 0:
+            fields_to_split = args['splitfield'].split(",")
         ingest_pipeline["processors"] += [{"dot_expander": {"field": "*"}}]
         ingest_pipeline["processors"] += [{"split": {"field": "service", "separator": ",", "ignore_missing": True, "ignore_failure": True}}]
+        for f in fields_to_split:
+            ingest_pipeline["processors"] += [{"split": {"field": f, "separator": ",", "ignore_missing": True, "ignore_failure": True}}]
         ingest_pipeline["processors"] += [{"geoip": {"field": "id.orig_h", "target_field": "geoip_orig", "ignore_missing": True}}]
         ingest_pipeline["processors"] += [{"geoip": {"field": "id.resp_h", "target_field": "geoip_resp", "ignore_missing": True}}]
 

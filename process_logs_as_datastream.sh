@@ -11,22 +11,23 @@ pythoncmd="python3"
 zeek2esargs="-g -l $num_of_lines"
 
 # Error checking
-if [ "$#" -lt 3 ]; then
-  echo "Usage: $0 NJOBS \"LIST_OF_LOGS_DELIMITED_BY_SPACES\" DIR1 DIR2 ..." >&2
+if [ "$#" -lt 4 ]; then
+  echo "Usage: $0 NJOBS \"ADDITIONAL_ARGS_TO_ZEEK2ES\" \"LIST_OF_LOGS_DELIMITED_BY_SPACES\" DIR1 DIR2 ..." >&2
   echo >&2
   echo "Example:" >&2
-  echo "  time $0 16 \"bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn\" /usr/local/var/logs" >&2
+  echo "  time $0 16 \"\" \"bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn\" /usr/local/var/logs" >&2
   exit 1
 fi
 
 # Things set from the command line
 njobs=$1
 logs=$2
-logdirs=${@:3}
+additional_args=$3
+logdirs=${@:4}
 
 # Iterate through the *.log.gz files in the supplied directory
 for val in $logs; do
-    zeek2esargsplus=$zeek2esargs" -i $stream_prepend$val$stream_ending"
+    zeek2esargsplus=$zeek2esargs" -i $stream_prepend$val$stream_ending "$additional_args
     echo "Processing $val logs..."
     filename_re="/^.*\/"$val$lognamedelim".*\.log\.gz$/"
 

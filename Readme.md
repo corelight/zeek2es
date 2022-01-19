@@ -171,9 +171,9 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-p SPLITFIELD] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
 
-Process Zeek ASCII logs into Elasticsearch.
+Process Zeek ASCII logs into ElasticSearch.
 
 positional arguments:
   filename              The Zeek log in *.log or *.gz format.  Include the full path.
@@ -198,6 +198,8 @@ optional arguments:
   -d DATASTREAM, --datastream DATASTREAM
                         Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.  (default: 0 - disabled)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
+  -p SPLITFIELD, --splitfield SPLITFIELD
+                        A comma delimited list of additional fields to split with the ingestion pipeline, if enabled.  (default: empty string - disabled)
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
@@ -267,18 +269,18 @@ if you run them without any parameters.
 
 ```
 $ ./process_logs_as_datastream.sh 
-Usage: ./process_logs_as_datastream.sh NJOBS "LIST_OF_LOGS_DELIMITED_BY_SPACES" DIR1 DIR2 ...
+Usage: ./process_logs_as_datastream.sh NJOBS "ADDITIONAL_ARGS_TO_ZEEK2ES" "LIST_OF_LOGS_DELIMITED_BY_SPACES" DIR1 DIR2 ...
 
 Example:
-  time ./process_logs_as_datastream.sh 16 "bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn" /usr/local/var/logs
+  time ./process_logs_as_datastream.sh 16 "" "bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn" /usr/local/var/logs
 ```
 
 ```
 $ ./process_log.sh 
-Usage: ./process_log.sh LOGFILENAME
+Usage: ./process_log.sh LOGFILENAME "ADDITIONAL_ARGS_TO_ZEEK2ES"
 
 Example:
-  fswatch -m poll_monitor --event Created -r /data/logs/zeek |  awk '/^.*\/(conn|dns|http)\..*\.log\.gz$/' | parallel -j 16 ./process_log.sh {} :::: -
+  fswatch -m poll_monitor --event Created -r /data/logs/zeek |  awk '/^.*\/(conn|dns|http)\..*\.log\.gz$/' | parallel -j 16 ./process_log.sh {} "" :::: -
 ```
 
 You will need to edit these scripts and command lines according to your environment.  
