@@ -21,8 +21,8 @@ fi
 
 # Things set from the command line
 njobs=$1
-logs=$2
-additional_args=$3
+additional_args=$2
+logs=$3
 logdirs=${@:4}
 
 # Iterate through the *.log.gz files in the supplied directory
