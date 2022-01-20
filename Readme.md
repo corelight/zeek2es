@@ -171,7 +171,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-p SPLITFIELD] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-p SPLITFIELDS] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
 
 Process Zeek ASCII logs into ElasticSearch.
 
@@ -198,7 +198,7 @@ optional arguments:
   -d DATASTREAM, --datastream DATASTREAM
                         Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.  (default: 0 - disabled)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
-  -p SPLITFIELD, --splitfield SPLITFIELD
+  -p SPLITFIELDS, --splitfields SPLITFIELDS
                         A comma delimited list of additional fields to split with the ingestion pipeline, if enabled.  (default: empty string - disabled)
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
