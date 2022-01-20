@@ -1,3 +1,4 @@
+v0.2.19         Fix a bug in a helper script.
 v0.2.18         Added the -p command line argument to split additional fields.
 v0.2.17         Fixed various things in the help scripts.  Refactor.
 v0.2.16         Fixed a typo in a helper script.
