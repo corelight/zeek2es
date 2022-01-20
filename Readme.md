@@ -272,7 +272,7 @@ $ ./process_logs_as_datastream.sh
 Usage: ./process_logs_as_datastream.sh NJOBS "ADDITIONAL_ARGS_TO_ZEEK2ES" "LIST_OF_LOGS_DELIMITED_BY_SPACES" DIR1 DIR2 ...
 
 Example:
-  time ./process_logs_as_datastream.sh 16 "" "bgp conn dce_rpc dhcp dns dpd files ftp http irc kerberos modbus modbus_register_change mount mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel weird x509 vpn" /usr/local/var/logs
+  time ./process_logs_as_datastream.sh 16 "" "amqp bgp conn dce_rpc dhcp dns dpd files ftp http ipsec irc kerberos modbus modbus_register_change mount mqtt mysql nfs notice ntlm ntp portmap radius reporter rdp rfb rip ripng sip smb_cmd smb_files smb_mapping smtp snmp socks ssh ssl syslog tunnel vpn weird wireguard x509" /usr/local/var/logs
 ```
 
 ```
