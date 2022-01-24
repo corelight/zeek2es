@@ -3,7 +3,7 @@
 # Things you can set:
 zeek2es_path=~/Source/zeek2es/zeek2es.py
 lognamedelim=\\.
-lambda_filter_file_dir=~/
+filter_file_dir=~/
 num_of_lines=50000
 stream_prepend="logs-zeek-"
 stream_ending=""
@@ -31,13 +31,13 @@ for val in $logs; do
     echo "Processing $val logs..."
     filename_re="/^.*\/"$val$lognamedelim".*\.log\.gz$/"
 
-    lambdafilterfile=$lambda_filter_file_dir$val"_filter.txt"
+    filterfile=$filter_file_dir$val"_filter.txt"
 
-    if [ -f $lambdafilterfile ]; then
-      echo "  Using filter file "$lambdafilterfile
-      find $logdirs | awk $filename_re | parallel -j $njobs $pythoncmd $zeek2es_path {} $zeek2esargsplus -f $lambdafilterfile :::: -
+    if [ -f $filterfile ]; then
+      echo "  Using filter file "$filterfile
+      find $logdirs | awk $filename_re | parallel -j $njobs $pythoncmd $zeek2es_path {} $zeek2esargsplus -f $filterfile :::: -
     else
-      echo "  No lambda filter file found for "$lambdafilterfile
+      echo "  No filter file found for "$filterfile
       find $logdirs | awk $filename_re | parallel -j $njobs $pythoncmd $zeek2es_path {} $zeek2esargsplus :::: -
     fi
 done

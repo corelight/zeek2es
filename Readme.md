@@ -16,6 +16,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
   - [JSON Log Input](#jsonloginput)
   - [Data Streams](#datastreams)
   - [Helper Scripts](#helperscripts)
+  - [Filter on Keys](#filteronkeys)
   - [Cython](#cython)
 
 ## Introduction <a name="introduction" />
@@ -120,6 +121,9 @@ connection log entries where the originator IP address is part of the `192.0.0.0
 python zeek2es.py conn.log.gz -a "lambda x: 'id.orig_h' in x and ipaddress.ip_address(x['id.orig_h']) in ipaddress.ip_network('192.0.0.0/8')"
 ```
 
+For power users, the `-f` option will allow you to define a full function (instead of Python's lambda functions) so you can write functions that 
+span multiple lines.
+
 ## Command Line Examples: <a name="commandlineexamples" />
 
 ```
@@ -171,7 +175,7 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS] [-a LAMBDAFILTER] [-f LAMBDAFILTERFILE] [-y OUTPUTFIELDS] [-d DATASTREAM] [-g] [-p SPLITFIELDS] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS [KEYWORDS ...]] [-a LAMBDAFILTER] [-f FILTERFILE] [-y OUTPUTFIELDS [OUTPUTFIELDS ...]] [-d DATASTREAM] [-g] [-p SPLITFIELDS [SPLITFIELDS ...]] [-o fieldname filename] [-e fieldname filename] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
 
 Process Zeek ASCII logs into ElasticSearch.
 
@@ -187,19 +191,23 @@ optional arguments:
   -l LINES, --lines LINES
                         Lines to buffer for RESTful operations. (default: 10,000)
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
-  -k KEYWORDS, --keywords KEYWORDS
-                        A comma delimited list of text fields to add a keyword subfield. (default: service)
+  -k KEYWORDS [KEYWORDS ...], --keywords KEYWORDS [KEYWORDS ...]
+                        A list of text fields to add a keyword subfield. (default: service)
   -a LAMBDAFILTER, --lambdafilter LAMBDAFILTER
-                        A lambda function, when eval'd will filter your output JSON dict. (default: empty string)
-  -f LAMBDAFILTERFILE, --lambdafilterfile LAMBDAFILTERFILE
-                        A lambda function file, when eval'd will filter your output JSON dict. (default: empty string)
-  -y OUTPUTFIELDS, --outputfields OUTPUTFIELDS
-                        A comma delimited list of fields to keep for the output.  Must include ts. (default: empty string)
+                        A Python lambda function, when eval'd will filter your output JSON dict. (default: empty string)
+  -f FILTERFILE, --filterfile FILTERFILE
+                        A Python function file, when eval'd will filter your output JSON dict. (default: empty string)
+  -y OUTPUTFIELDS [OUTPUTFIELDS ...], --outputfields OUTPUTFIELDS [OUTPUTFIELDS ...]
+                        A list of fields to keep for the output.  Must include ts. (default: empty string)
   -d DATASTREAM, --datastream DATASTREAM
                         Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.  (default: 0 - disabled)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
-  -p SPLITFIELDS, --splitfields SPLITFIELDS
-                        A comma delimited list of additional fields to split with the ingestion pipeline, if enabled.  (default: empty string - disabled)
+  -p SPLITFIELDS [SPLITFIELDS ...], --splitfields SPLITFIELDS [SPLITFIELDS ...]
+                        A list of additional fields to split with the ingestion pipeline, if enabled.  (default: empty string - disabled)
+  -o fieldname filename, --logkey fieldname filename
+                        A field to log to a file.  Example: uid uid.txt.  Will append to the file!  Delete file before running if appending is undesired.  (default: empty string - disabled)
+  -e fieldname filename, --filterkeys fieldname filename
+                        A field to filter with keys from a file.  Example: uid uid.txt.  (default: empty string - disabled)
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
@@ -300,6 +308,16 @@ curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
 curl -X DELETE http://localhost:9200/_index_template/logs-zeek*?pretty
 curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
+
+### Filter on Keys <a name="filteronkeys" />
+
+In some instances you might want to pull data from one log that depends on another.  An
+example would be finding all `ssl.log` rows that have a `uid` matching previously
+indexed rows from `conn.log`, or vice versa.  You can filter by importing your
+`conn.log` files with the `-o uid uid.txt` command line.  This will log all uids that were 
+indexed to a file named `uid.txt`.  Then, when you import your `ssl.log` files you will provide 
+the `-e uid uid.txt` command line.  This will only import SSL rows 
+containing `uid` values that are in `uid.txt`, previously built from our import of `conn.log`.
 
 ### Cython <a name="cython" />
 
