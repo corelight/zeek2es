@@ -200,12 +200,16 @@ optional arguments:
   -y OUTPUTFIELDS [OUTPUTFIELDS ...], --outputfields OUTPUTFIELDS [OUTPUTFIELDS ...]
                         A list of fields to keep for the output.  Must include ts. (default: empty string)
   -d DATASTREAM, --datastream DATASTREAM
-                        Instead of an index, use a data stream that will rollover at this many GB.  Recommended is 50 or less.  (default: 0 - disabled)
+                        Instead of an index, use a data stream that will rollover at this many GB.
+                        Recommended is 50 or less.  (default: 0 - disabled)
   -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
   -p SPLITFIELDS [SPLITFIELDS ...], --splitfields SPLITFIELDS [SPLITFIELDS ...]
-                        A list of additional fields to split with the ingestion pipeline, if enabled.  (default: empty string - disabled)
+                        A list of additional fields to split with the ingestion pipeline, if enabled.
+                        (default: empty string - disabled)
   -o fieldname filename, --logkey fieldname filename
-                        A field to log to a file.  Example: uid uid.txt.  Will append to the file!  Delete file before running if appending is undesired.  (default: empty string - disabled)
+                        A field to log to a file.  Example: uid uid.txt.  
+                        Will append to the file!  Delete file before running if appending is undesired.  
+                        This option can be called more than once.  (default: empty - disabled)
   -e fieldname filename, --filterkeys fieldname filename
                         A field to filter with keys from a file.  Example: uid uid.txt.  (default: empty string - disabled)
   -j, --jsonlogs        Assume input logs are JSON.
