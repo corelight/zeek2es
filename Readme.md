@@ -9,6 +9,8 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 - [Upgrading zeek2es](#upgradingzeek2es)
   - [ES Ingest Pipeline](#esingestpipeline)
 - [Filtering Data](#filteringdata)
+  - [Python Filters](#pythonfilters)
+  - [Filter on Keys](#filteronkeys)
 - [Command Line Examples](#commandlineexamples)
 - [Command Line Options](#commandlineoptions)
 - [Requirements](#requirements)
@@ -16,7 +18,6 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
   - [JSON Log Input](#jsonloginput)
   - [Data Streams](#datastreams)
   - [Helper Scripts](#helperscripts)
-  - [Filter on Keys](#filteronkeys)
   - [Cython](#cython)
 
 ## Introduction <a name="introduction" />
@@ -65,7 +66,7 @@ Also, no other Python libraries are needed to run this application.  If Python
 is already on your system, there is nothing additional for you to copy over
 to your machine than [Elasticsearch, Kibana](https://www.elastic.co/start), and [zeek2es.py](zeek2es.py).
 
-## Installation: <a name="installation" />
+## Installation <a name="installation" />
 
 There is none.  You just copy [zeek2es.py](zeek2es.py) to your host and run it with Python.  Once Zeek
 logs have been imported with automatic index name generation (meaning, you did not supply the `-i` option)
@@ -95,7 +96,9 @@ curl -X DELETE "localhost:9200/_ingest/pipeline/zeekgeoip?pretty"
 
 This command is strongly recommended whenever updating your copy of zeek2es.py.
 
-## Filtering Data: <a name="filteringdata" />
+## Filtering Data <a name="filteringdata" />
+
+### Python Filters <a name="pythonfilters" />
 
 zeek2es provides filtering capabilities for your Zeek logs before they are stored in ElasticSearch.  This
 functionality can be enabled with the `-a` or `-f` options.  The filters are constructed from Python
@@ -124,7 +127,17 @@ python zeek2es.py conn.log.gz -a "lambda x: 'id.orig_h' in x and ipaddress.ip_ad
 For power users, the `-f` option will allow you to define a full function (instead of Python's lambda functions) so you can write functions that 
 span multiple lines.
 
-## Command Line Examples: <a name="commandlineexamples" />
+### Filter on Keys <a name="filteronkeys" />
+
+In some instances you might want to pull data from one log that depends on another.  An
+example would be finding all `ssl.log` rows that have a `uid` matching previously
+indexed rows from `conn.log`, or vice versa.  You can filter by importing your
+`conn.log` files with the `-o uid uid.txt` command line.  This will log all uids that were 
+indexed to a file named `uid.txt`.  Then, when you import your `ssl.log` files you will provide 
+the `-e uid uid.txt` command line.  This will only import SSL rows 
+containing `uid` values that are in `uid.txt`, previously built from our import of `conn.log`.
+
+## Command Line Examples <a name="commandlineexamples" />
 
 ```
 python zeek2es.py your_zeek_log.gz -i your_es_index_name
@@ -171,7 +184,7 @@ You could delete all conn.log entries with this command:
 curl -X DELETE http://localhost:9200/zeek_conn_*
 ```
 
-## Command Line Options: <a name="commandlineoptions" />
+## Command Line Options <a name="commandlineoptions" />
 
 ```
 $ python zeek2es.py -h
@@ -240,12 +253,12 @@ To delete the lifecycle policy:
 	curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
 
-## Requirements: <a name="requirements" />
+## Requirements <a name="requirements" />
 
 - A Unix-like environment (MacOs works!)
 - Python
 
-## Notes: <a name="notes" />
+## Notes <a name="notes" />
 
 ### JSON Log Input <a name="jsonloginput" />
 
@@ -312,16 +325,6 @@ curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
 curl -X DELETE http://localhost:9200/_index_template/logs-zeek*?pretty
 curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
-
-### Filter on Keys <a name="filteronkeys" />
-
-In some instances you might want to pull data from one log that depends on another.  An
-example would be finding all `ssl.log` rows that have a `uid` matching previously
-indexed rows from `conn.log`, or vice versa.  You can filter by importing your
-`conn.log` files with the `-o uid uid.txt` command line.  This will log all uids that were 
-indexed to a file named `uid.txt`.  Then, when you import your `ssl.log` files you will provide 
-the `-e uid uid.txt` command line.  This will only import SSL rows 
-containing `uid` values that are in `uid.txt`, previously built from our import of `conn.log`.
 
 ### Cython <a name="cython" />
 
