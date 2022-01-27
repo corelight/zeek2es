@@ -64,7 +64,8 @@ if you already have the [requests](https://docs.python-requests.org/en/latest/) 
 
 ## Installation <a name="installation" />
 
-There is none.  You just copy [zeek2es.py](zeek2es.py) to your host and run it with Python.  Once Zeek
+Assuming you meet the [requirements](#requirements), there is none.  You just 
+copy [zeek2es.py](zeek2es.py) to your host and run it with Python.  Once Zeek
 logs have been imported with automatic index name generation (meaning, you did not supply the `-i` option)
 you will find your indices named "zeek_`zeeklogname`_`date`", where `zeeklogname` is a log name like `conn`
 and the `date` is in `YYYY-MM-DD` format.  Set your Kibana index pattern to match `zeek*` in this case.  If
