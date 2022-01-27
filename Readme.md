@@ -30,10 +30,6 @@ conn.log for a single uid:
 
 ![Kibana](images/multi-log-correlation.png)
 
-Or you could just simply use the uid (or fuid) you are looking for in all logs:
-
-![Kibana](images/multi-log-correlation-simple.png)
-
 You can perform subnet searching on Zeek's 'addr' type:
 
 ![Kibana Subnet Searching](images/kibana-subnet-search.png)
@@ -62,9 +58,9 @@ to process with the [jq application](https://stedolan.github.io/jq).
 You can add a keyword subfield to text fields with the `-k` command line option.  This is useful
 for aggregations in Kibana.
 
-Also, no other Python libraries are needed to run this application.  If Python
-is already on your system, there is nothing additional for you to copy over
-to your machine than [Elasticsearch, Kibana](https://www.elastic.co/start), and [zeek2es.py](zeek2es.py).
+If Python is already on your system, there is nothing additional for you to copy over
+to your machine than [Elasticsearch, Kibana](https://www.elastic.co/start), and [zeek2es.py](zeek2es.py)
+if you already have the [requests](https://docs.python-requests.org/en/latest/) library installed.
 
 ## Installation <a name="installation" />
 
@@ -257,6 +253,7 @@ To delete the lifecycle policy:
 
 - A Unix-like environment (MacOs works!)
 - Python
+  - [requests](https://docs.python-requests.org/en/latest/) Python library installed, such as with with `pip`.
 
 ## Notes <a name="notes" />
 
