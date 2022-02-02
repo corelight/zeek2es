@@ -6,6 +6,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 ## Table of Contents:
 - [Introduction](#introduction)
 - [Installation](#installation)
+  - [Elastic v8.0+](#elastic80)
 - [Upgrading zeek2es](#upgradingzeek2es)
   - [ES Ingest Pipeline](#esingestpipeline)
 - [Filtering Data](#filteringdata)
@@ -73,6 +74,20 @@ you named your index with the `-i` option, you will need to create a Kibana inde
 matches your naming scheme.
 
 If you are upgrading zeek2es, please see [the section on upgrading zeek2es](#upgradingzeek2es).
+
+### Elastic v8.0+ <a name="elastic80" />
+
+If you are using Elastic v8.0+, it has security enabled by default.  This adds a requirement of a username
+and password plus HTTPS, and are not currently supported by this script.  If you wish to continue with v8+, 
+you can disable Elastic security in `elasticsearch.yml` with the following line:
+
+```
+xpack.security.enabled: false
+```
+
+It is generally not recommended to reduce security in applications, so make sure your data is secure
+through other means.  Disabling security in this manner will make your v8 Elastic cluster behave
+like a default v7 cluster.
 
 ## Upgrading zeek2es <a name="upgradingzeek2es" />
 
