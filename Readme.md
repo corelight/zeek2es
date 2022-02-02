@@ -78,16 +78,21 @@ If you are upgrading zeek2es, please see [the section on upgrading zeek2es](#upg
 ### Elastic v8.0+ <a name="elastic80" />
 
 If you are using Elastic v8.0+, it has security enabled by default.  This adds a requirement of a username
-and password plus HTTPS, and are not currently supported by this script.  If you wish to continue with v8+, 
-you can disable Elastic security in `elasticsearch.yml` with the following line:
+and password, plus HTTPS.  
+
+If you want to be able to delete indices/data streams with wildcards (as examples in this readme show),
+edit  `elasticsearch.yml` with the following line:
 
 ```
-xpack.security.enabled: false
+action.destructive_requires_name: false
 ```
 
-It is generally not recommended to reduce security in applications, so make sure your data is secure
-through other means.  Disabling security in this manner will make your v8 Elastic cluster behave
-like a default v7 cluster.
+You will also need to change the curl commands in this readme to contain `-k -u elastic:<password>`
+where the `elastic` user's password is set with a command like the following:
+
+```
+./bin/elasticsearch-reset-password -u elastic -i
+```
 
 ## Upgrading zeek2es <a name="upgradingzeek2es" />
 
@@ -200,7 +205,9 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [-l LINES] [-n NAME] [-k KEYWORDS [KEYWORDS ...]] [-a LAMBDAFILTER] [-f FILTERFILE] [-y OUTPUTFIELDS [OUTPUTFIELDS ...]] [-d DATASTREAM] [-g] [-p SPLITFIELDS [SPLITFIELDS ...]] [-o fieldname filename] [-e fieldname filename] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z] filename
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [--user USER] [--passwd PASSWD] [-l LINES] [-n NAME] [-k KEYWORDS [KEYWORDS ...]] [-a LAMBDAFILTER] [-f FILTERFILE] [-y OUTPUTFIELDS [OUTPUTFIELDS ...]] [-d DATASTREAM] [-o fieldname filename]
+                  [-e fieldname filename] [-g] [-p SPLITFIELDS [SPLITFIELDS ...]] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z]
+                  filename
 
 Process Zeek ASCII logs into ElasticSearch.
 
@@ -212,7 +219,9 @@ optional arguments:
   -i ESINDEX, --esindex ESINDEX
                         The Elasticsearch index/data stream name.
   -u ESURL, --esurl ESURL
-                        The Elasticsearch URL. (default: http://localhost:9200/)
+                        The Elasticsearch URL.  Use ending slash.  Use https for Elastic v8+. (default: http://localhost:9200/)
+  --user USER           The Elasticsearch user. (default: disabled)
+  --passwd PASSWD       The Elasticsearch password. Note this will put your password in this shell history file.  (default: disabled)
   -l LINES, --lines LINES
                         Lines to buffer for RESTful operations. (default: 10,000)
   -n NAME, --name NAME  The name of the system to add to the index for uniqueness. (default: empty string)
@@ -227,16 +236,16 @@ optional arguments:
   -d DATASTREAM, --datastream DATASTREAM
                         Instead of an index, use a data stream that will rollover at this many GB.
                         Recommended is 50 or less.  (default: 0 - disabled)
-  -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
-  -p SPLITFIELDS [SPLITFIELDS ...], --splitfields SPLITFIELDS [SPLITFIELDS ...]
-                        A list of additional fields to split with the ingestion pipeline, if enabled.
-                        (default: empty string - disabled)
   -o fieldname filename, --logkey fieldname filename
                         A field to log to a file.  Example: uid uid.txt.  
                         Will append to the file!  Delete file before running if appending is undesired.  
                         This option can be called more than once.  (default: empty - disabled)
   -e fieldname filename, --filterkeys fieldname filename
                         A field to filter with keys from a file.  Example: uid uid.txt.  (default: empty string - disabled)
+  -g, --ingestion       Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.
+  -p SPLITFIELDS [SPLITFIELDS ...], --splitfields SPLITFIELDS [SPLITFIELDS ...]
+                        A list of additional fields to split with the ingestion pipeline, if enabled.
+                        (default: empty string - disabled)
   -j, --jsonlogs        Assume input logs are JSON.
   -r, --origtime        Keep the numerical time format, not milliseconds as ES needs.
   -t, --timestamp       Keep the time in timestamp format.
@@ -263,6 +272,8 @@ To delete index templates:
 To delete the lifecycle policy:
 
 	curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
+
+You will need to add -k -u elastic_user:password if you are using Elastic v8+.
 ```
 
 ## Requirements <a name="requirements" />
@@ -338,6 +349,20 @@ curl -X DELETE http://localhost:9200/_index_template/zeek*?pretty
 curl -X DELETE http://localhost:9200/_index_template/logs-zeek*?pretty
 curl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
 ```
+
+... or if using Elastic v8+ ...
+
+```
+curl -X DELETE -k -u elastic:password https://localhost:9200/zeek*?pretty
+curl -X DELETE -k -u elastic:password https://localhost:9200/_data_stream/zeek*?pretty
+curl -X DELETE -k -u elastic:password https://localhost:9200/_data_stream/logs-zeek*?pretty
+curl -X DELETE -k -u elastic:password https://localhost:9200/_index_template/zeek*?pretty
+curl -X DELETE -k -u elastic:password https://localhost:9200/_index_template/logs-zeek*?pretty
+curl -X DELETE -k -u elastic:password https://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty
+```
+
+But to be able to do this in v8+ you will need to configure Elastic as described 
+in the section [Elastic v8.0+](#elastic80).
 
 ### Cython <a name="cython" />
 

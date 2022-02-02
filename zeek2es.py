@@ -4,6 +4,8 @@ import json
 import csv
 import io
 import requests
+from requests.auth import HTTPBasicAuth
+from urllib3.exceptions import InsecureRequestWarning
 import datetime
 import re
 import argparse
@@ -12,8 +14,11 @@ import random
 import ipaddress
 import os
 
-# The number of bits to use in a random hash
+# The number of bits to use in a random hash.
 hashbits = 128
+
+# Disable SSL warnings.
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 # We do this to add a little extra help at the end.
 class MyParser(argparse.ArgumentParser):
@@ -24,6 +29,7 @@ class MyParser(argparse.ArgumentParser):
         print("To delete data streams:\n\n\tcurl -X DELETE http://localhost:9200/_data_stream/zeek*?pretty\n")
         print("To delete index templates:\n\n\tcurl -X DELETE http://localhost:9200/_index_template/zeek*?pretty\n")
         print("To delete the lifecycle policy:\n\n\tcurl -X DELETE http://localhost:9200/_ilm/policy/zeek-lifecycle-policy?pretty\n")
+        print("You will need to add -k -u elastic_user:password if you are using Elastic v8+.\n")
 
 # This takes care of arg parsing
 def parseargs():
@@ -31,7 +37,9 @@ def parseargs():
     parser.add_argument('filename', 
                         help='The Zeek log in *.log or *.gz format.  Include the full path.')
     parser.add_argument('-i', '--esindex', help='The Elasticsearch index/data stream name.')
-    parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The Elasticsearch URL. (default: http://localhost:9200/)')
+    parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The Elasticsearch URL.  Use ending slash.  Use https for Elastic v8+. (default: http://localhost:9200/)')
+    parser.add_argument('--user', default="", help='The Elasticsearch user. (default: disabled)')
+    parser.add_argument('--passwd', default="", help='The Elasticsearch password. Note this will put your password in this shell history file.  (default: disabled)')
     parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
     parser.add_argument('-n', '--name', default="", help='The name of the system to add to the index for uniqueness. (default: empty string)')
     parser.add_argument('-k', '--keywords', nargs="+", default="service", help='A list of text fields to add a keyword subfield. (default: service)')
@@ -39,10 +47,10 @@ def parseargs():
     parser.add_argument('-f', '--filterfile', default="", help='A Python function file, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-y', '--outputfields', nargs="+", default="", help='A list of fields to keep for the output.  Must include ts. (default: empty string)')
     parser.add_argument('-d', '--datastream', default=0, type=int, help='Instead of an index, use a data stream that will rollover at this many GB.\nRecommended is 50 or less.  (default: 0 - disabled)')
-    parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
-    parser.add_argument('-p', '--splitfields', nargs="+", default="", help='A list of additional fields to split with the ingestion pipeline, if enabled.\n(default: empty string - disabled)')
     parser.add_argument('-o', '--logkey', nargs=2, action='append', metavar=('fieldname','filename'), default=[], help='A field to log to a file.  Example: uid uid.txt.  \nWill append to the file!  Delete file before running if appending is undesired.  \nThis option can be called more than once.  (default: empty - disabled)')
     parser.add_argument('-e', '--filterkeys', nargs=2, metavar=('fieldname','filename'), default="", help='A field to filter with keys from a file.  Example: uid uid.txt.  (default: empty string - disabled)')
+    parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
+    parser.add_argument('-p', '--splitfields', nargs="+", default="", help='A list of additional fields to split with the ingestion pipeline, if enabled.\n(default: empty string - disabled)')
     parser.add_argument('-j', '--jsonlogs', action="store_true", help='Assume input logs are JSON.')
     parser.add_argument('-r', '--origtime', action="store_true", help='Keep the numerical time format, not milliseconds as ES needs.')
     parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
@@ -56,9 +64,14 @@ def parseargs():
 
 # A function to send data in bulk to ES.
 def sendbulk(args, outstring, es_index, filename):
+    # Elastic username and password auth
+    auth = None
+    if (len(args['user']) > 0):
+        auth = HTTPBasicAuth(args['user'], args['passwd'])
+
     if not args['stdout']:
-        res = requests.put(args['esurl']+'/_bulk', headers={'Content-Type': 'application/json'},
-                            data=outstring.encode('UTF-8'))
+        res = requests.put(args['esurl']+'/_bulk', headers={'Content-Type': 'application/json'}, 
+                            data=outstring.encode('UTF-8'), auth=auth, verify=False)
         if not res.ok:
             if not args['supresswarnings']:
                 print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
@@ -67,23 +80,38 @@ def sendbulk(args, outstring, es_index, filename):
 
 # A function to send the datastream info to ES.
 def senddatastream(args, es_index, mappings):
+    # Elastic username and password auth
+    auth = None
+    if (len(args['user']) > 0):
+        auth = HTTPBasicAuth(args['user'], args['passwd'])
+
     lifecycle_policy = {"policy": {"phases": {"hot": {"actions": {"rollover": {"max_primary_shard_size": "{}GB".format(args['datastream'])}}}}}}
     res = requests.put(args['esurl']+"_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
-                        data=json.dumps(lifecycle_policy).encode('UTF-8'))
+                        data=json.dumps(lifecycle_policy).encode('UTF-8'), auth=auth, verify=False)
     index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
                         "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}, "mappings": mappings["mappings"]}}
     res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
-                        data=json.dumps(index_template).encode('UTF-8'))
+                        data=json.dumps(index_template).encode('UTF-8'), auth=auth, verify=False)
 
 # A function to send mappings to ES.
 def sendmappings(args, es_index, mappings):
+    # Elastic username and password auth
+    auth = None
+    if (len(args['user']) > 0):
+        auth = HTTPBasicAuth(args['user'], args['passwd'])
+
     res = requests.put(args['esurl']+es_index, headers={'Content-Type': 'application/json'},
-                        data=json.dumps(mappings).encode('UTF-8'))
+                        data=json.dumps(mappings).encode('UTF-8'), auth=auth, verify=False)
 
 # A function to send the ingest pipeline to ES.
 def sendpipeline(args, ingest_pipeline):
+    # Elastic username and password auth
+    auth = None
+    if (len(args['user']) > 0):
+        auth = HTTPBasicAuth(args['user'], args['passwd'])
+
     res = requests.put(args['esurl']+"_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
-                        data=json.dumps(ingest_pipeline).encode('UTF-8'))
+                        data=json.dumps(ingest_pipeline).encode('UTF-8'), auth=auth, verify=False)
 
 # Everything important is in here.
 def main(**args):

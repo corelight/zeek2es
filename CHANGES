@@ -1,3 +1,4 @@
+v0.3.1          Added more logic to make ready for Elastic v8.
 v0.3.0          Added filtering on keys.  Cleaned up some argparse logic, breaking previous command lines.
 v0.2.20         Fix wording.
 v0.2.19         Fix a bug in a helper script.
