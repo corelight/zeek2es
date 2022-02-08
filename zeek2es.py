@@ -289,7 +289,7 @@ def main(**args):
         zcat_process = subprocess.Popen(zcat_name+[filename], 
                                         stdout=subprocess.PIPE)
 
-        grep_process = subprocess.Popen(['grep', '-v', '#'], 
+        grep_process = subprocess.Popen(['grep', '-E', '-v', '^#'], 
                                         stdin=zcat_process.stdout,
                                         stdout=subprocess.PIPE)
 
