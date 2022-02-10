@@ -94,6 +94,10 @@ where the `elastic` user's password is set with a command like the following:
 ./bin/elasticsearch-reset-password -u elastic -i
 ```
 
+You can use `zeek2es.py` with the `--user` and `--passwd` command line options to specify your
+credentials to ES.  You can also supply these options via the extra command line arguments for the helper
+scripts.
+
 ## Upgrading zeek2es <a name="upgradingzeek2es" />
 
 Most upgrades should be as simple as copying the newer [zeek2es.py](zeek2es.py) over 
