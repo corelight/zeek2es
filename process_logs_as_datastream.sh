@@ -5,6 +5,7 @@ zeek2es_path=~/Source/zeek2es/zeek2es.py
 lognamedelim=\\.
 filter_file_dir=~/
 num_of_lines=50000
+num_of_gb=50
 stream_prepend="logs-zeek-"
 stream_ending=""
 pythoncmd="python3"
@@ -27,7 +28,7 @@ logdirs=${@:4}
 
 # Iterate through the *.log.gz files in the supplied directory
 for val in $logs; do
-    zeek2esargsplus=$zeek2esargs" -i $stream_prepend$val$stream_ending "$additional_args
+    zeek2esargsplus=$zeek2esargs" -i $stream_prepend$val$stream_ending --compress -d "$num_of_gb" "$additional_args
     echo "Processing $val logs..."
     filename_re="/^.*\/"$val$lognamedelim".*\.log\.gz$/"
 

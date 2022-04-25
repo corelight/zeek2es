@@ -47,6 +47,7 @@ def parseargs():
     parser.add_argument('-f', '--filterfile', default="", help='A Python function file, when eval\'d will filter your output JSON dict. (default: empty string)')
     parser.add_argument('-y', '--outputfields', nargs="+", default="", help='A list of fields to keep for the output.  Must include ts. (default: empty string)')
     parser.add_argument('-d', '--datastream', default=0, type=int, help='Instead of an index, use a data stream that will rollover at this many GB.\nRecommended is 50 or less.  (default: 0 - disabled)')
+    parser.add_argument('--compress', action="store_true", help='If a datastream is used, enable best compression.')
     parser.add_argument('-o', '--logkey', nargs=2, action='append', metavar=('fieldname','filename'), default=[], help='A field to log to a file.  Example: uid uid.txt.  \nWill append to the file!  Delete file before running if appending is undesired.  \nThis option can be called more than once.  (default: empty - disabled)')
     parser.add_argument('-e', '--filterkeys', nargs=2, metavar=('fieldname','filename'), default="", help='A field to filter with keys from a file.  Example: uid uid.txt.  (default: empty string - disabled)')
     parser.add_argument('-g', '--ingestion', action="store_true", help='Use the ingestion pipeline to do things like geolocate IPs and split services.  Takes longer, but worth it.')
@@ -90,6 +91,8 @@ def senddatastream(args, es_index, mappings):
                         data=json.dumps(lifecycle_policy).encode('UTF-8'), auth=auth, verify=False)
     index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
                         "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}, "mappings": mappings["mappings"]}}
+    if (args['compress']):
+        index_template["template"]["settings"]["index"] = {"codec": "best_compression"}
     res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
                         data=json.dumps(index_template).encode('UTF-8'), auth=auth, verify=False)
 

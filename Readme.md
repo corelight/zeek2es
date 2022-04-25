@@ -209,8 +209,8 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [--user USER] [--passwd PASSWD] [-l LINES] [-n NAME] [-k KEYWORDS [KEYWORDS ...]] [-a LAMBDAFILTER] [-f FILTERFILE] [-y OUTPUTFIELDS [OUTPUTFIELDS ...]] [-d DATASTREAM] [-o fieldname filename]
-                  [-e fieldname filename] [-g] [-p SPLITFIELDS [SPLITFIELDS ...]] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z]
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [--user USER] [--passwd PASSWD] [-l LINES] [-n NAME] [-k KEYWORDS [KEYWORDS ...]] [-a LAMBDAFILTER] [-f FILTERFILE] [-y OUTPUTFIELDS [OUTPUTFIELDS ...]] [-d DATASTREAM] [--compress]
+                  [-o fieldname filename] [-e fieldname filename] [-g] [-p SPLITFIELDS [SPLITFIELDS ...]] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z]
                   filename
 
 Process Zeek ASCII logs into ElasticSearch.
@@ -240,6 +240,7 @@ optional arguments:
   -d DATASTREAM, --datastream DATASTREAM
                         Instead of an index, use a data stream that will rollover at this many GB.
                         Recommended is 50 or less.  (default: 0 - disabled)
+  --compress            If a datastream is used, enable best compression.
   -o fieldname filename, --logkey fieldname filename
                         A field to log to a file.  Example: uid uid.txt.  
                         Will append to the file!  Delete file before running if appending is undesired.  
