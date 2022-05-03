@@ -3,6 +3,8 @@
 # Things you can set:
 zeek2es_path=~/Source/zeek2es/zeek2es.py
 lognamedelim=\\.
+#zeek2es_path=~/zeek2es.py
+#lognamedelim=_2
 filter_file_dir=~/
 num_of_lines=50000
 stream_prepend="logs-zeek-"
