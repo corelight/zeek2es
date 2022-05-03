@@ -244,14 +244,17 @@ def main(**args):
 
         # Build the ES index.
         if not args['esindex']:
-            sysname = ""
-            if (len(args['name']) > 0):
-                sysname = "{}_".format(args['name'])
-            # We allow for hashes instead of dates in the index name.
-            if not args['hashdates']:
-                es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, log_date.date())
+            if args['datastream'] > 0:
+                es_index = "logs-zeek-{}".format(zeek_log_path)
             else:
-                es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, random.getrandbits(hashbits))
+                sysname = ""
+                if (len(args['name']) > 0):
+                    sysname = "{}_".format(args['name'])
+                # We allow for hashes instead of dates in the index name.
+                if not args['hashdates']:
+                    es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, log_date.date())
+                else:
+                    es_index = "zeek_"+sysname+"{}_{}".format(zeek_log_path, random.getrandbits(hashbits))
         else:
             es_index = args['esindex']
 
