@@ -37,7 +37,7 @@ def parseargs():
     parser.add_argument('filename', 
                         help='The Zeek log in *.log or *.gz format.  Include the full path.')
     parser.add_argument('-i', '--esindex', help='The Elasticsearch index/data stream name.')
-    parser.add_argument('-u', '--esurl', default="http://localhost:9200/", help='The Elasticsearch URL.  Use ending slash.  Use https for Elastic v8+. (default: http://localhost:9200/)')
+    parser.add_argument('-u', '--esurl', default="http://localhost:9200", help='The Elasticsearch URL.  Use ending slash.  Use https for Elastic v8+. (default: http://localhost:9200)')
     parser.add_argument('--user', default="", help='The Elasticsearch user. (default: disabled)')
     parser.add_argument('--passwd', default="", help='The Elasticsearch password. Note this will put your password in this shell history file.  (default: disabled)')
     parser.add_argument('-l', '--lines', default=10000, type=int, help='Lines to buffer for RESTful operations. (default: 10,000)')
@@ -71,7 +71,9 @@ def sendbulk(args, outstring, es_index, filename):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
     if not args['stdout']:
-        res = requests.put(args['esurl']+'/_bulk', headers={'Content-Type': 'application/json'}, 
+        esurl = args['esurl'][:-1] if args['esurl'].endswith('/') else args['esurl']
+
+        res = requests.put(esurl+'/_bulk', headers={'Content-Type': 'application/json'}, 
                             data=outstring.encode('UTF-8'), auth=auth, verify=False)
         if not res.ok:
             if not args['supresswarnings']:
@@ -86,14 +88,16 @@ def senddatastream(args, es_index, mappings):
     if (len(args['user']) > 0):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
+    esurl = args['esurl'][:-1] if args['esurl'].endswith('/') else args['esurl']
+
     lifecycle_policy = {"policy": {"phases": {"hot": {"actions": {"rollover": {"max_primary_shard_size": "{}GB".format(args['datastream'])}}}}}}
-    res = requests.put(args['esurl']+"/_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
+    res = requests.put(esurl+"/_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
                         data=json.dumps(lifecycle_policy).encode('UTF-8'), auth=auth, verify=False)
     index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
                         "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}, "mappings": mappings["mappings"]}}
     if (args['compress']):
         index_template["template"]["settings"]["index"] = {"codec": "best_compression"}
-    res = requests.put(args['esurl']+"/_index_template/"+es_index, headers={'Content-Type': 'application/json'},
+    res = requests.put(esurl+"/_index_template/"+es_index, headers={'Content-Type': 'application/json'},
                         data=json.dumps(index_template).encode('UTF-8'), auth=auth, verify=False)
 
 # A function to send mappings to ES.
@@ -103,7 +107,9 @@ def sendmappings(args, es_index, mappings):
     if (len(args['user']) > 0):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
-    res = requests.put(args['esurl']+"/"+es_index, headers={'Content-Type': 'application/json'},
+    esurl = args['esurl'][:-1] if args['esurl'].endswith('/') else args['esurl']
+
+    res = requests.put(esurl+"/"+es_index, headers={'Content-Type': 'application/json'},
                         data=json.dumps(mappings).encode('UTF-8'), auth=auth, verify=False)
 
 # A function to send the ingest pipeline to ES.
@@ -113,7 +119,9 @@ def sendpipeline(args, ingest_pipeline):
     if (len(args['user']) > 0):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
-    res = requests.put(args['esurl']+"/_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
+    esurl = args['esurl'][:-1] if args['esurl'].endswith('/') else args['esurl']
+
+    res = requests.put(esurl+"/_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
                         data=json.dumps(ingest_pipeline).encode('UTF-8'), auth=auth, verify=False)
 
 # Everything important is in here.

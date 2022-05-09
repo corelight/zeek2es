@@ -1,3 +1,4 @@
 build/
 *.so
 *.c
+.DS_Store
