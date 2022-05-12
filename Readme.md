@@ -7,6 +7,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 - [Introduction](#introduction)
 - [Installation](#installation)
   - [Elastic v8.0+](#elastic80)
+  - [Docker](#docker)
 - [Upgrading zeek2es](#upgradingzeek2es)
   - [ES Ingest Pipeline](#esingestpipeline)
 - [Filtering Data](#filteringdata)
@@ -97,6 +98,28 @@ where the `elastic` user's password is set with a command like the following:
 You can use `zeek2es.py` with the `--user` and `--passwd` command line options to specify your
 credentials to ES.  You can also supply these options via the extra command line arguments for the helper
 scripts.
+
+### Docker <a name="docker" />
+
+Probably the easiest way to use this code is through Docker.  First, you will want to edit the lines
+with `CHANGEME!!!` in the `.env` file to fit your environment.  You will also need to edit the Elastic
+password in `docker/zeek2es/entrypoint.sh` to match.  It can be found after the `--passwd` option.  
+Next, you can change directory into the `docker` directory and type the following commands to bring 
+up a zeek2es and Elasticsearch cluster:
+
+```
+docker-compose build
+dockr-compose up
+```
+
+Now you can put logs in the `VOLUME_MOUNT\logs` directory (`VOLUME_MOUNT` you set in the `.env` file).
+When logs are CREATED in this directory, zeek2es will begin processing them and pushing them into Elasticsearch.
+You can then login to https://localhost:5601 with the username and password you set up in the `.env` file.  
+By default there is a self signed certificate, but you can change that if you edit the docker compose files.  Once inside
+Kibana you will go to Stack Management->Data Views and create a data view for `logs*` with the timestamp `@timestamp`.
+Now you will be able to go to Discover and start searching your logs!  Your data is persistent, in the `VOLUME_MOUNT` directory.
+If you would like to remove all data, just `rm -rf VOLUME_MOUNT`, substituting the directory you set into that remove command.
+The next time you start your cluster it will be brand new for more data.
 
 ## Upgrading zeek2es <a name="upgradingzeek2es" />
 
