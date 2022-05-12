@@ -112,13 +112,13 @@ docker-compose build
 dockr-compose up
 ```
 
-Now you can put logs in the `VOLUME_MOUNT\logs` directory (`VOLUME_MOUNT` you set in the `.env` file).
+Now you can put logs in the `VOLUME_MOUNT/data/logs` directory (`VOLUME_MOUNT` you set in the `.env` file).
 When logs are CREATED in this directory, zeek2es will begin processing them and pushing them into Elasticsearch.
 You can then login to https://localhost:5601 with the username and password you set up in the `.env` file.  
 By default there is a self signed certificate, but you can change that if you edit the docker compose files.  Once inside
 Kibana you will go to Stack Management->Data Views and create a data view for `logs*` with the timestamp `@timestamp`.
-Now you will be able to go to Discover and start searching your logs!  Your data is persistent, in the `VOLUME_MOUNT` directory.
-If you would like to remove all data, just `rm -rf VOLUME_MOUNT`, substituting the directory you set into that remove command.
+Now you will be able to go to Discover and start searching your logs!  Your data is persistent in the `VOLUME_MOUNT/data` directory you set.
+If you would like to remove all data, just `rm -rf VOLUME_MOUNT/data`, substituting the directory you set into that remove command.
 The next time you start your cluster it will be brand new for more data.
 
 ## Upgrading zeek2es <a name="upgradingzeek2es" />
