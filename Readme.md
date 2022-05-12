@@ -101,9 +101,9 @@ scripts.
 
 ### Docker <a name="docker" />
 
-Probably the easiest way to use this code is through Docker.  First, you will want to edit the lines
-with `CHANGEME!!!` in the `.env` file to fit your environment.  You will also need to edit the Elastic
-password in `docker/zeek2es/entrypoint.sh` to match.  It can be found after the `--passwd` option.  
+Probably the easiest way to use this code is through Docker.  All of the files are in the `docker` directory.
+First, you will want to edit the lines with `CHANGEME!!!` in the `.env` file to fit your environment.  
+You will also need to edit the Elastic password in `docker/zeek2es/entrypoint.sh` to match.  It can be found after the `--passwd` option.  
 Next, you can change directory into the `docker` directory and type the following commands to bring 
 up a zeek2es and Elasticsearch cluster:
 
