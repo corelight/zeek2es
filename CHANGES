@@ -1,3 +1,4 @@
+v0.3.8          Fixed up some minor issues with JSON stdout output.
 v0.3.7          Added Docker pieces.
 v0.3.6          Fixed a bug with the slash on the end of the ES url option.
 v0.3.5          Removed need for trailing slash on ES URL. 

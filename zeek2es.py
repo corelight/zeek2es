@@ -79,7 +79,7 @@ def sendbulk(args, outstring, es_index, filename):
             if not args['supresswarnings']:
                 print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
     else:
-        print(outstring)
+        print(outstring.strip())
 
 # A function to send the datastream info to ES.
 def senddatastream(args, es_index, mappings):
@@ -436,7 +436,7 @@ def main(**args):
                                 putpipeline = True
 
                 # Once we get more than "lines", we send it to ES
-                if n >= args['lines']:
+                if n >= args['lines'] or (args['stdout'] and len(output) > 0):
                     sendbulk(args, outstring, es_index, filename)
                     outstring = ""
                     n = 0
@@ -572,7 +572,7 @@ def main(**args):
                         n += 1
 
                 # Here we output a set of lines to the ES server.
-                if n >= args['lines']:
+                if n >= args['lines'] or (args['stdout'] and len(outstring) > 0):
                     sendbulk(args, outstring, es_index, filename)
                     outstring = ""
                     n = 0
