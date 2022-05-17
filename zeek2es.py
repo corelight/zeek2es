@@ -442,7 +442,7 @@ def main(**args):
                     n = 0
 
             # We do this one last time to get rid of any remaining lines.
-            if n != 0:
+            if n != 0 and len(outstring) > 0:
                 sendbulk(args, outstring, es_index, filename)
     else:
         # This does everything the TSV version does, but for JSON
@@ -578,7 +578,7 @@ def main(**args):
                     n = 0
 
         # We send the last of the data to the ES server, if there is any left.
-        if n != 0:
+        if n != 0 and len(outstring) > 0:
             sendbulk(args, outstring, es_index, filename)
 
 # This deals with running as a script vs. cython.
