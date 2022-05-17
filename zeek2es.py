@@ -390,8 +390,6 @@ def main(**args):
                             added_val = True
                     i += 1
 
-                output = []
-
                 # Here we only add data if there is a timestamp, and if the filter keys are used we make sure our key exists.
                 if added_val and "ts" in d and (not filterkeys_field or (filterkeys_field and d[filterkeys_field] in filterkeys)):
                     # This is the Python function filtering logic.
@@ -438,7 +436,7 @@ def main(**args):
                                 putpipeline = True
 
                 # Once we get more than "lines", we send it to ES
-                if n >= args['lines'] or (args['stdout'] and len(output) > 0):
+                if n >= args['lines'] or (args['stdout'] and len(outstring) > 0):
                     sendbulk(args, outstring, es_index, filename)
                     outstring = ""
                     n = 0
