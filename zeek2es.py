@@ -390,6 +390,8 @@ def main(**args):
                             added_val = True
                     i += 1
 
+                output = []
+
                 # Here we only add data if there is a timestamp, and if the filter keys are used we make sure our key exists.
                 if added_val and "ts" in d and (not filterkeys_field or (filterkeys_field and d[filterkeys_field] in filterkeys)):
                     # This is the Python function filtering logic.
