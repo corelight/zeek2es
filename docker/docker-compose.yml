@@ -67,6 +67,7 @@ services:
       interval: 1s
       timeout: 5s
       retries: 120
+    container_name: "setup"
 
   es01:
     depends_on:
@@ -112,6 +113,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    container_name: "es01"
 
   es02:
     depends_on:
@@ -153,6 +155,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    container_name: "es02"
 
   es03:
     depends_on:
@@ -194,6 +197,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    container_name: "es03"
 
   kibana:
     depends_on:
@@ -231,6 +235,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    container_name: "kibana"
 
   zeek2es:
     build:
@@ -244,10 +249,16 @@ services:
         condition: service_healthy
       es03:
         condition: service_healthy
+    command: >
+      bash -c '
+        chmod 755 /entrypoint.sh;
+        /entrypoint.sh
+      '
     volumes:
+      - ./zeek2es/entrypoint.sh:/entrypoint.sh
       - ${VOLUME_MOUNT}/data/logs:/logs
-    entrypoint: /entrypoint.sh
     tty: true
+    container_name: "zeek2es"
 
 volumes:
   certs:

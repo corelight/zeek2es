@@ -1,3 +1,4 @@
+v0.3.10         Improved Docker components.
 v0.3.9          Fixed a variable check when there is no output.
 v0.3.8          Fixed up some minor issues with JSON stdout output.
 v0.3.7          Added Docker pieces.
