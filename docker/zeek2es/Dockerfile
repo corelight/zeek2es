@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 RUN apt-get -q update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -9,6 +9,7 @@ RUN apt-get -q update && \
       iproute2 \
       jq \
       less \
+      netcat \
       net-tools \
       parallel \
       python3 \
@@ -22,14 +23,16 @@ RUN apt-get -q update && \
       termshark \
       tshark \
       vim \
-      wget && \
-    pip3 install --no-cache-dir pre-commit requests
-
-# Clean up files
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf ~/.cache/pip
+      wget \
+      zeek-aux && \
+    pip3 install --no-cache-dir pre-commit requests && \
+    curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-8.2.0-amd64.deb && \
+    dpkg -i filebeat-8.2.0-amd64.deb && \
+    rm filebeat-8.2.0-amd64.deb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf ~/.cache/pip
 
 # Install zeek2es
 RUN cd / && git clone https://github.com/corelight/zeek2es.git
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod 755 /entrypoint.sh
+#COPY entrypoint.sh /entrypoint.sh
+#RUN chmod 755 /entrypoint.sh
