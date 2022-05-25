@@ -1,11 +1,12 @@
+v0.3.11         Added Humio support.
 v0.3.10         Improved Docker components.
 v0.3.9          Fixed a variable check when there is no output.
 v0.3.8          Fixed up some minor issues with JSON stdout output.
 v0.3.7          Added Docker pieces.
 v0.3.6          Fixed a bug with the slash on the end of the ES url option.
 v0.3.5          Removed need for trailing slash on ES URL. 
-v0.3.4		Made datastream names consistent with ES expectations if -d is used without an index name.
-v0.3.3		Added best compression option and fixed helper script.
+v0.3.4		    Made datastream names consistent with ES expectations if -d is used without an index name.
+v0.3.3		    Added best compression option and fixed helper script.
 v0.3.2          Fixed a bug with a grep command.
 v0.3.1          Added more logic to make ready for Elastic v8.
 v0.3.0          Added filtering on keys.  Cleaned up some argparse logic, breaking previous command lines.
