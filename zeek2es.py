@@ -57,6 +57,7 @@ def parseargs():
     parser.add_argument('-t', '--timestamp', action="store_true", help='Keep the time in timestamp format.')
     parser.add_argument('-s', '--stdout', action="store_true", help='Print JSON to stdout instead of sending to Elasticsearch directly.')
     parser.add_argument('-b', '--nobulk', action="store_true", help='Remove the ES bulk JSON header.  Requires --stdout.')
+    parser.add_argument('--humio', nargs=2, default="", help='First argument is the Humio URL, the second argument is the ingest token.')
     parser.add_argument('-c', '--cython', action="store_true", help='Use Cython execution by loading the local zeek2es.so file through an import.\nRun python setup.py build_ext --inplace first to make your zeek2es.so file!')
     parser.add_argument('-w', '--hashdates', action="store_true", help='Use hashes instead of dates for the index name.')
     parser.add_argument('-z', '--supresswarnings', action="store_true", help='Supress any type of warning.  Die stoically and silently.')
@@ -70,16 +71,22 @@ def sendbulk(args, outstring, es_index, filename):
     if (len(args['user']) > 0):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
-    if not args['stdout']:
-        esurl = args['esurl'][:-1] if args['esurl'].endswith('/') else args['esurl']
+    if len(args['humio']) != 2:
+        if not args['stdout']:
+            esurl = args['esurl'][:-1] if args['esurl'].endswith('/') else args['esurl']
 
-        res = requests.put(esurl+'/_bulk', headers={'Content-Type': 'application/json'}, 
-                            data=outstring.encode('UTF-8'), auth=auth, verify=False)
-        if not res.ok:
-            if not args['supresswarnings']:
-                print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
+            res = requests.put(esurl+'/_bulk', headers={'Content-Type': 'application/json'}, 
+                                data=outstring.encode('UTF-8'), auth=auth, verify=False)
+            if not res.ok:
+                if not args['supresswarnings']:
+                    print("WARNING! PUT did not return OK! Your index {} is incomplete.  Filename: {} Response: {} {}".format(es_index, filename, res, res.text))
+        else:
+            print(outstring.strip())
     else:
-        print(outstring.strip())
+        # Send to Humio
+        Headers = { "Authorization" : "Bearer "+args['humio'][1] }
+        data = [{"messages" : outstring.strip().split('\n') }]
+        r = requests.post(args['humio'][0]+'/api/v1/ingest/humio-unstructured', headers=Headers, json=data)
 
 # A function to send the datastream info to ES.
 def senddatastream(args, es_index, mappings):
@@ -167,6 +174,12 @@ def main(**args):
         if not args['supresswarnings']:
             print("The nobulk option can only be used with the stdout option.")
         exit(-2)
+
+    # Error checking
+    if len(args['humio']) > 0 and (not args['stdout'] or not args['nobulk']):
+        if not args['supresswarnings']:
+            print("The Humio option can only be used with the stdout and nobulk options.")
+        exit(-5)
 
     # Error checking
     if not args['timestamp'] and args['origtime']:
@@ -436,7 +449,7 @@ def main(**args):
                                 putpipeline = True
 
                 # Once we get more than "lines", we send it to ES
-                if n >= args['lines'] or (args['stdout'] and len(outstring) > 0):
+                if n >= args['lines'] and len(outstring) > 0:
                     sendbulk(args, outstring, es_index, filename)
                     outstring = ""
                     n = 0
@@ -572,7 +585,7 @@ def main(**args):
                         n += 1
 
                 # Here we output a set of lines to the ES server.
-                if n >= args['lines'] or (args['stdout'] and len(outstring) > 0):
+                if n >= args['lines'] and len(outstring) > 0:
                     sendbulk(args, outstring, es_index, filename)
                     outstring = ""
                     n = 0

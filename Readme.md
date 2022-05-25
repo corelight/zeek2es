@@ -232,8 +232,13 @@ curl -X DELETE http://localhost:9200/zeek_conn_*
 
 ```
 $ python zeek2es.py -h
-usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [--user USER] [--passwd PASSWD] [-l LINES] [-n NAME] [-k KEYWORDS [KEYWORDS ...]] [-a LAMBDAFILTER] [-f FILTERFILE] [-y OUTPUTFIELDS [OUTPUTFIELDS ...]] [-d DATASTREAM] [--compress]
-                  [-o fieldname filename] [-e fieldname filename] [-g] [-p SPLITFIELDS [SPLITFIELDS ...]] [-j] [-r] [-t] [-s] [-b] [-c] [-w] [-z]
+usage: zeek2es.py [-h] [-i ESINDEX] [-u ESURL] [--user USER] [--passwd PASSWD]
+                  [-l LINES] [-n NAME] [-k KEYWORDS [KEYWORDS ...]]
+                  [-a LAMBDAFILTER] [-f FILTERFILE]
+                  [-y OUTPUTFIELDS [OUTPUTFIELDS ...]] [-d DATASTREAM]
+                  [--compress] [-o fieldname filename] [-e fieldname filename]
+                  [-g] [-p SPLITFIELDS [SPLITFIELDS ...]] [-j] [-r] [-t] [-s]
+                  [-b] [--humio HUMIO HUMIO] [-c] [-w] [-z]
                   filename
 
 Process Zeek ASCII logs into ElasticSearch.
@@ -246,7 +251,7 @@ optional arguments:
   -i ESINDEX, --esindex ESINDEX
                         The Elasticsearch index/data stream name.
   -u ESURL, --esurl ESURL
-                        The Elasticsearch URL.  Use ending slash.  Use https for Elastic v8+. (default: http://localhost:9200/)
+                        The Elasticsearch URL.  Use ending slash.  Use https for Elastic v8+. (default: http://localhost:9200)
   --user USER           The Elasticsearch user. (default: disabled)
   --passwd PASSWD       The Elasticsearch password. Note this will put your password in this shell history file.  (default: disabled)
   -l LINES, --lines LINES
@@ -279,6 +284,7 @@ optional arguments:
   -t, --timestamp       Keep the time in timestamp format.
   -s, --stdout          Print JSON to stdout instead of sending to Elasticsearch directly.
   -b, --nobulk          Remove the ES bulk JSON header.  Requires --stdout.
+  --humio HUMIO HUMIO   First argument is the Humio URL, the second argument is the ingest token.
   -c, --cython          Use Cython execution by loading the local zeek2es.so file through an import.
                         Run python setup.py build_ext --inplace first to make your zeek2es.so file!
   -w, --hashdates       Use hashes instead of dates for the index name.
