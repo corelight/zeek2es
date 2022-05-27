@@ -10,6 +10,7 @@ import datetime
 import re
 import argparse
 import random
+import time
 # Making these available for lambda filter input.
 import ipaddress
 import os
@@ -86,7 +87,14 @@ def sendbulk(args, outstring, es_index, filename):
         # Send to Humio
         Headers = { "Authorization" : "Bearer "+args['humio'][1] }
         data = [{"messages" : outstring.strip().split('\n') }]
-        r = requests.post(args['humio'][0]+'/api/v1/ingest/humio-unstructured', headers=Headers, json=data)
+        while True:
+            try:
+                r = requests.post(args['humio'][0]+'/api/v1/ingest/humio-unstructured', headers=Headers, json=data)
+                break
+            except Exception as exc:
+                if not args['supresswarnings']:
+                    print("WARNING, Humio error: {}".format(exc))
+                time.sleep(1)
 
 # A function to send the datastream info to ES.
 def senddatastream(args, es_index, mappings):
