@@ -87,7 +87,6 @@ def sendbulk(args, outstring, es_index, filename):
         # Send to Humio
         Headers = { "Authorization" : "Bearer "+args['humio'][1] }
         data = [{"messages" : outstring.strip().split('\n') }]
-        print(data)
         while True:
             try:
                 r = requests.post(args['humio'][0]+'/api/v1/ingest/humio-unstructured', headers=Headers, json=data)
