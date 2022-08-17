@@ -1,3 +1,4 @@
+v0.3.13         Fixed some errors on Humio import.
 v0.3.12         Will continue to populate data after a Humio error.
 v0.3.11         Added Humio support.
 v0.3.10         Improved Docker components.
