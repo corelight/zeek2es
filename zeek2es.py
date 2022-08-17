@@ -87,6 +87,7 @@ def sendbulk(args, outstring, es_index, filename):
         # Send to Humio
         Headers = { "Authorization" : "Bearer "+args['humio'][1] }
         data = [{"messages" : outstring.strip().split('\n') }]
+        print(data)
         while True:
             try:
                 r = requests.post(args['humio'][0]+'/api/v1/ingest/humio-unstructured', headers=Headers, json=data)
@@ -184,9 +185,9 @@ def main(**args):
         exit(-2)
 
     # Error checking
-    if len(args['humio']) > 0 and (not args['stdout'] or not args['nobulk']):
+    if len(args['humio']) > 0 and (not args['stdout'] or not args['nobulk'] or args['timestamp']):
         if not args['supresswarnings']:
-            print("The Humio option can only be used with the stdout and nobulk options.")
+            print("The Humio option can only be used with the stdout and nobulk options, and cannot have the timestamp option.")
         exit(-5)
 
     # Error checking
@@ -443,6 +444,9 @@ def main(**args):
                                 i["create"]["pipeline"] = "zeekgeoip"
                             outstring += json.dumps(i)+"\n"
                         # Prepare the output and increment counters
+                        if args['humio']:
+                            d['ts'] = d['ts'] + "Z"
+                            d["_write_ts"] = d["ts"]
                         d["@timestamp"] = d["ts"]
                         outstring += json.dumps(d)+"\n"
                         n += 1
