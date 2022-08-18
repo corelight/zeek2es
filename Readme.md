@@ -17,6 +17,7 @@ logs into [ElasticSearch's bulk load JSON format](https://www.elastic.co/guide/e
 - [Command Line Options](#commandlineoptions)
 - [Requirements](#requirements)
 - [Notes](#notes)
+  - [Humio](#humio)
   - [JSON Log Input](#jsonloginput)
   - [Data Streams](#datastreams)
   - [Helper Scripts](#helperscripts)
@@ -317,6 +318,18 @@ You will need to add -k -u elastic_user:password if you are using Elastic v8+.
   - [requests](https://docs.python-requests.org/en/latest/) Python library installed, such as with with `pip`.
 
 ## Notes <a name="notes" />
+
+### Humio <a name="humio" />
+
+To import your data into Humio you will need to set up a repository with the `corelight-json` parser.  Obtain
+the ingest token for the repository and you can import your data with a command such as:
+
+```
+python3 zeek2es.py -s -b --humio http://localhost:8080 b005bf74-1ed3-4871-904f-9460a4687202 http.log 
+```
+
+The URL should be in the format of: `http://yourserver:8080`, as the rest of the path is added by the
+`zeek2es.py` script automatically for you.
 
 ### JSON Log Input <a name="jsonloginput" />
 

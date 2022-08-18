@@ -1,3 +1,4 @@
+v0.3.15         Improved Humio import.
 v0.3.14         Removed a print statement.
 v0.3.13         Fixed some errors on Humio import.
 v0.3.12         Will continue to populate data after a Humio error.

@@ -445,7 +445,14 @@ def main(**args):
                         # Prepare the output and increment counters
                         if args['humio']:
                             d['ts'] = d['ts'] + "Z"
-                            d["_write_ts"] = d["ts"]
+                            if "_write_ts" in d:
+                                d['_write_ts'] = d['_write_ts'] + "Z"
+                            else:
+                                d["_write_ts"] = d["ts"]
+                            if "_path" not in d:
+                                d["_path"] = zeek_log_path
+                            if (len(args['name'].strip()) > 0):
+                                d["_system_name"] = args['name'].strip()
                         d["@timestamp"] = d["ts"]
                         outstring += json.dumps(d)+"\n"
                         n += 1
